@@ -1481,48 +1481,122 @@ function buildCompatFeedCanvas(){
 /* ── SHARE LOGIC ── */
 async function shareToIG(canvas, format){
   track('share_clicked',{format, archetype: myType, is_easter_egg: isEasterEgg});
+  const isStory = format.includes('story');
+  const filename = `typedin-${format}.png`;
 
   // Convert canvas to blob
-  const blob = await new Promise(res=>canvas.toBlob(res,'image/png'));
-  const file = new File([blob], `typedin-${format}.png`, {type:'image/png'});
-  const url = URL.createObjectURL(blob);
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
 
   if(isMobile()){
-    // Try Web Share API (best on iOS/Android)
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{
-        await navigator.share({
-          files:[file],
-          title:'Typed In — my relationship archetype',
-        });
+    // iOS Safari: open image in new tab — user long-presses to save
+    // Android Chrome: try download, fall back to new tab
+    const blobUrl = URL.createObjectURL(blob);
+    try {
+      // Try Web Share API with files (works on iOS 15+ and some Android)
+      const file = new File([blob], filename, {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'My Typed In result'});
+        URL.revokeObjectURL(blobUrl);
         return;
-      }catch(e){ if(e.name==='AbortError') return; }
+      }
+    } catch(e){
+      if(e.name === 'AbortError'){ URL.revokeObjectURL(blobUrl); return; }
     }
-    // Fallback: download + hint to open IG
-    dl(canvas, `typedin-${format}.png`);
-    setTimeout(()=>alert('Image saved! Open Instagram and select it from your camera roll to share.'),300);
+    // Fallback: open image in new tab + show toast
+    window.open(blobUrl, '_blank');
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 30000);
+    showShareToast(isStory);
   } else {
-    // Desktop: just download
-    dl(canvas, `typedin-${format}.png`);
+    // Desktop: standard download
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 10000);
+    showShareToast(isStory);
   }
-  URL.revokeObjectURL(url);
 }
 
-function shareStory(){
+function showShareToast(isStory){
+  // Remove existing toast
+  const old = document.getElementById('ig-toast');
+  if(old) old.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'ig-toast';
+  toast.style.cssText = `
+    position:fixed; bottom:0; left:0; right:0; z-index:2000;
+    background:#1a1612; color:#f5f0e8;
+    padding:1.25rem 1.5rem 2rem;
+    border-radius:20px 20px 0 0;
+    box-shadow:0 -4px 32px rgba(0,0,0,0.25);
+    animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+    font-family:var(--sans);
+  `;
+
+  const mobile = isMobile();
+  const steps = isStory
+    ? [
+        mobile ? 'Image opened — long press to save it' : 'Image downloaded to your device',
+        'Open Instagram',
+        'Tap the + button → Story',
+        'Tap the image icon at bottom left',
+        'Select the saved image'
+      ]
+    : [
+        mobile ? 'Image opened — long press to save it' : 'Image downloaded to your device',
+        'Open Instagram',
+        'Tap the + button → Post',
+        'Select the saved image from your gallery'
+      ];
+
+  toast.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div>
+        <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.45;margin-bottom:.25rem">Next steps</div>
+        <div style="font-family:var(--serif);font-size:1.1rem;font-weight:700">Share to Instagram ${isStory?'Story':'Feed'}</div>
+      </div>
+      <button onclick="document.getElementById('ig-toast').remove()" style="background:rgba(255,255,255,.12);border:none;color:#f5f0e8;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
+      ${steps.map((s,i)=>`
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0">${i+1}</span>
+          <span style="font-size:13px;opacity:${i===0?'1':'.75'};font-weight:${i===0?'500':'300'}">${s}</span>
+        </div>`).join('')}
+    </div>
+    <button onclick="openInstagram();document.getElementById('ig-toast').remove()" style="width:100%;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border:none;color:#fff;padding:14px;border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">
+      Open Instagram
+    </button>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Auto dismiss after 12s
+  setTimeout(()=>{ const t=document.getElementById('ig-toast'); if(t) t.remove(); }, 12000);
+}
+
+function openInstagram(){
+  // Try deep link first, fall back to web
+  window.location.href = 'instagram://camera';
+  setTimeout(()=>{ window.open('https://www.instagram.com','_blank'); }, 1500);
+}
+
+async function shareStory(){
   const cv = buildStoryCanvas(myType);
-  shareToIG(cv,'story');
+  await shareToIG(cv,'story');
 }
-function shareFeed(){
+async function shareFeed(){
   const cv = buildFeedCanvas(myType);
-  shareToIG(cv,'feed');
+  await shareToIG(cv,'feed');
 }
-function shareCompatStory(){
+async function shareCompatStory(){
   const cv = buildCompatStoryCanvas();
-  shareToIG(cv,'compat-story');
+  await shareToIG(cv,'compat-story');
 }
-function shareCompatFeed(){
+async function shareCompatFeed(){
   const cv = buildCompatFeedCanvas();
-  shareToIG(cv,'compat-feed');
+  await shareToIG(cv,'compat-feed');
 }
 
 function downloadCompatImg(){ shareCompatStory(); }
@@ -1537,6 +1611,7 @@ function shareCompatX(){
 }
 
 function dl(cv,name){
+  // Legacy download — used only internally now
   const a=document.createElement('a');
   a.download=name; a.href=cv.toDataURL('image/png'); a.click();
 }
