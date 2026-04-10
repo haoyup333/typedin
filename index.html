@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relationship Archetype Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1612;--paper:#f5f0e8;--warm:#c8956a;--muted:#7a6f63;--faint:#e0d9cc;--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.5}
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.93) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* LANDING */
+#landing{align-items:center;justify-content:center;text-align:center;padding:3rem 1.5rem}
+.land-tag{font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2.5rem;opacity:0;animation:up .6s .2s forwards}
+.land-title{font-family:var(--serif);font-size:clamp(2rem,5.5vw,3.8rem);line-height:1.15;max-width:600px;margin:0 auto 1.5rem;opacity:0;animation:up .6s .35s forwards}
+.land-title em{font-style:italic;color:var(--warm)}
+.land-sub{font-size:15px;color:var(--muted);max-width:380px;margin:0 auto 3rem;line-height:1.75;font-weight:300;opacity:0;animation:up .6s .5s forwards}
+.meta-strip{display:flex;border:1px solid var(--faint);margin:0 auto 2.5rem;max-width:340px;opacity:0;animation:up .6s .6s forwards}
+.meta-cell{flex:1;padding:14px 0;text-align:center}
+.meta-cell+.meta-cell{border-left:1px solid var(--faint)}
+.meta-n{font-family:var(--serif);font-size:1.5rem;font-weight:700;display:block}
+.meta-l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.btn-go{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:17px 50px;cursor:pointer;transition:transform .15s,background .15s;opacity:0;animation:up .6s .75s forwards}
+.btn-go:hover{background:#2e2720;transform:translateY(-1px)}
+.land-foot{font-size:11px;color:var(--muted);margin-top:1.25rem;opacity:0;animation:up .6s .9s forwards}
+
+/* COMPAT LANDING */
+#compat-landing{align-items:center;justify-content:center;text-align:center;padding:3rem 1.5rem}
+
+/* QUESTION */
+#qscreen{padding:0}
+.qhdr{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--faint)}
+.qhdr-logo{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--muted)}
+.prog-wrap{flex:1;max-width:240px;margin:0 1.25rem}
+.prog-track{height:1px;background:var(--faint)}
+.prog-fill{height:100%;background:var(--ink);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.prog-n{font-size:11px;color:var(--muted);margin-top:5px;text-align:center}
+.nav-btn{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .15s;padding:4px;display:flex;align-items:center;gap:4px}
+.nav-btn:hover{color:var(--ink)}
+.nav-btn:disabled{opacity:.25;cursor:default}
+.skip-btn{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .15s}
+.skip-btn:hover{color:var(--ink)}
+.qbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;max-width:640px;margin:0 auto;width:100%}
+.qtag{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.75rem;opacity:0;animation:up .35s forwards}
+.qtext{font-family:var(--serif);font-size:clamp(1.1rem,2.6vw,1.45rem);line-height:1.55;text-align:center;max-width:520px;margin-bottom:2.25rem;opacity:0;animation:up .35s .07s forwards}
+.qopts{width:100%;max-width:480px;display:flex;flex-direction:column;gap:8px;opacity:0;animation:up .35s .14s forwards}
+.qopt{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink);background:transparent;border:1px solid var(--faint);padding:13px 16px;text-align:left;cursor:pointer;transition:all .15s;position:relative}
+.qopt::after{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .15s}
+.qopt:hover{border-color:var(--ink);padding-left:22px}
+.qopt:hover::after{width:3px}
+.qopt.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.qopt.sel::after{display:none}
+
+/* RESULT */
+#rscreen{padding:0 0 5rem}
+
+/* BLIND BOX HERO CARD */
+.hero-wrap{width:100%;display:flex;flex-direction:column;align-items:center;padding:2rem 1.5rem 0;opacity:0;animation:popIn .7s .1s forwards}
+.blind-card{width:100%;max-width:360px;border-radius:24px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.07)}
+.card-figure{width:100%;display:flex;align-items:flex-end;justify-content:center;padding:2rem 2rem 0;position:relative;min-height:250px}
+.card-figure svg{width:170px;height:auto;animation:float 4s ease-in-out infinite;position:relative;z-index:2;filter:drop-shadow(0 10px 20px rgba(0,0,0,.14))}
+.card-deco{position:absolute;inset:0;z-index:1}
+.card-foot{padding:1.5rem 1.75rem 1.75rem;position:relative;z-index:2}
+.bcard-the{font-family:var(--serif);font-size:13px;opacity:.5;display:block;margin-bottom:.1rem}
+.bcard-name{font-family:var(--serif);font-size:2.2rem;font-weight:700;line-height:1;display:block;margin-bottom:.45rem}
+.bcard-hook{font-family:var(--serif);font-style:italic;font-size:.9rem;opacity:.65;line-height:1.5;display:block;margin-bottom:1.1rem}
+.bcard-axes{display:flex;gap:5px;flex-wrap:wrap}
+.bcard-axis{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+
+/* SHARE SECTION */
+.share-hint{text-align:center;padding:.75rem;font-size:11px;color:var(--muted);border-bottom:1px solid var(--faint);opacity:0;animation:up .5s .7s forwards}
+
+/* Instagram share panel */
+.ig-panel{padding:1.25rem 1.5rem;border-bottom:1px solid var(--faint);opacity:0;animation:up .5s .72s forwards}
+.ig-header{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.ig-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#f9ce34 0%,#ee2a7b 50%,#6228d7 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ig-logo svg{width:13px;height:13px}
+.ig-header-text{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ig-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.ig-card{border:1px solid var(--faint);border-radius:10px;padding:13px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;background:transparent;text-align:left;font-family:var(--sans)}
+.ig-card:hover{border-color:var(--ink);background:rgba(26,22,18,.03)}
+.ig-card-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;margin-bottom:3px;flex-shrink:0}
+.ig-card-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.2}
+.ig-card-desc{font-size:11px;color:var(--muted);line-height:1.45;font-weight:300}
+.ig-card-badge{position:absolute;top:9px;right:9px;font-size:9px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:#fff0f6;color:#c0306a}
+.story-icon{background:linear-gradient(135deg,#f9ce34 0%,#ee2a7b 50%,#6228d7 100%)}
+.feed-icon{background:var(--ink)}
+.ig-copy-row{display:flex}
+.ig-copy-cap{width:100%;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;background:transparent;color:var(--muted);border:1px solid var(--faint);padding:9px 14px;cursor:pointer;transition:all .15s;border-radius:8px;text-align:left}
+.ig-copy-cap:hover{border-color:var(--ink);color:var(--ink)}
+
+/* compat link row */
+.compat-row{padding:.9rem 1.5rem;border-bottom:1px solid var(--faint);display:flex;align-items:center;gap:10px;opacity:0;animation:up .5s .78s forwards;flex-wrap:wrap}
+.compat-row-label{font-size:12px;color:var(--muted);font-weight:300;flex-shrink:0}
+.compat-link-chip{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;background:var(--warm);color:#fff;border:none;padding:9px 16px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.compat-link-chip:hover{background:#b8825a}
+
+/* body */
+.rbody{max-width:640px;margin:0 auto;padding:2.5rem 1.5rem 0}
+.rsec{margin-bottom:2.25rem;opacity:0;animation:up .5s forwards}
+.rsec-lbl{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--warm);margin-bottom:.65rem}
+.rsec-text{font-size:15px;line-height:1.85;color:var(--ink);font-weight:300}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2.25rem;opacity:0;animation:up .5s forwards}
+@media(max-width:480px){.two-col{grid-template-columns:1fr}}
+.col-card{background:var(--paper);border:1px solid var(--faint);padding:1.25rem}
+.col-card-lbl{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.col-card-text{font-size:13px;line-height:1.7;color:var(--ink);font-weight:300}
+.quotes-block{display:flex;flex-direction:column;gap:10px;margin-bottom:2.5rem;opacity:0;animation:up .5s forwards}
+.quote-line{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--muted);padding:10px 14px;border-left:2px solid var(--faint);line-height:1.6}
+.compat-cta{border:1px solid var(--faint);padding:1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;opacity:0;animation:up .5s forwards}
+.compat-cta::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--warm)}
+.compat-tag{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--warm);margin-bottom:.5rem}
+.compat-title{font-family:var(--serif);font-size:1.15rem;margin-bottom:.5rem}
+.compat-desc{font-size:13px;color:var(--muted);font-weight:300;line-height:1.65;margin-bottom:1.25rem}
+.compat-link-row{display:flex;gap:8px}
+.compat-url{flex:1;font-size:12px;color:var(--muted);background:var(--faint);padding:9px 12px;word-break:break-all;border:none}
+.compat-copy{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:9px 16px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.compat-copy:hover{background:#2e2720}
+.unlock-box{border:1px solid var(--faint);padding:2rem;text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;opacity:0;animation:up .5s forwards}
+.unlock-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--warm)}
+.unlock-tag{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--warm);margin-bottom:.5rem}
+.unlock-title{font-family:var(--serif);font-size:1.2rem;margin-bottom:.4rem}
+.unlock-desc{font-size:13px;color:var(--muted);font-weight:300;margin:0 auto 1.25rem;line-height:1.7;max-width:360px}
+.btn-warm{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;background:var(--warm);color:#fff;border:none;padding:13px 32px;cursor:pointer;transition:all .15s}
+.btn-warm:hover{background:#b8825a;transform:translateY(-1px)}
+.retake{display:block;text-align:center;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;margin:0 auto;opacity:0;animation:up .5s forwards}
+.retake:hover{color:var(--ink)}
+
+/* COMPAT RESULT */
+#compat-result{padding:0 0 5rem}
+
+/* hidden canvases */
+#cv-story,#cv-feed,#cv-compat-story,#cv-compat-feed{position:absolute;left:-9999px;top:-9999px}
+
+@media(max-width:480px){.qhdr{padding:1rem}.qbody{padding:2rem 1rem 0}.rbody{padding:2rem 1rem 0}.ig-panel{padding:1rem}.compat-row{padding:.75rem 1rem}.card-figure{min-height:200px}.card-figure svg{width:130px}}
+
+.egg-reveal{background:linear-gradient(135deg,#1a1612 0%,#2c1858 50%,#1a1612 100%);color:#f5f0e8;text-align:center;padding:2rem 1.5rem;margin:0;position:relative;overflow:hidden}
+.egg-reveal::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(104,64,168,0.3) 0%,transparent 70%)}
+.egg-stars{font-size:1.5rem;letter-spacing:.5rem;margin-bottom:.75rem;animation:pulse 2s ease-in-out infinite}
+.egg-label{font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,240,232,.5);margin-bottom:.4rem}
+.egg-title{font-family:var(--serif);font-size:1.4rem;color:#fff;margin-bottom:.4rem}
+.egg-rarity{font-size:11px;color:rgba(245,240,232,.6);font-style:italic}
+@keyframes pulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem}
+.modal-box{background:var(--paper);max-width:680px;width:100%;position:relative;margin:auto}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);z-index:2;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--ink)}
+.shadow-hero{background:var(--ink);color:var(--paper);padding:2.5rem 2rem}
+.shadow-eyebrow{font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,240,232,.4);margin-bottom:.5rem}
+.shadow-name{font-family:var(--serif);font-size:2.2rem;font-weight:700;margin-bottom:.5rem;color:var(--paper)}
+.shadow-trigger{font-family:var(--serif);font-style:italic;font-size:.95rem;color:rgba(245,240,232,.6);margin-bottom:1.5rem}
+.shadow-desc{font-size:14px;line-height:1.8;color:rgba(245,240,232,.8);font-weight:300;margin-bottom:1.5rem}
+.shadow-signs{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem}
+.shadow-sign{font-size:13px;color:rgba(245,240,232,.7);padding:8px 12px;border-left:2px solid rgba(245,240,232,.2);line-height:1.5}
+.shadow-recovery{background:rgba(255,255,255,.06);padding:1rem 1.25rem;border-left:3px solid var(--warm)}
+.shadow-recovery-lbl{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--warm);margin-bottom:.5rem}
+.shadow-recovery-text{font-size:13px;color:rgba(245,240,232,.8);line-height:1.65;font-weight:300}
+.compat-section{padding:2rem}
+.compat-h{font-family:var(--serif);font-size:1.3rem;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--faint)}
+.compat-best{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+@media(max-width:480px){.compat-best{grid-template-columns:1fr}}
+.compat-card{padding:1rem;border:1px solid var(--faint)}
+.compat-card-lbl{font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.4rem}
+.compat-card-type{font-family:var(--serif);font-size:1rem;font-weight:700;margin-bottom:.4rem}
+.compat-card-why{font-size:12px;color:var(--muted);line-height:1.55;font-weight:300}
+.compat-all-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.compat-row{border-bottom:1px solid var(--faint);cursor:pointer}
+.compat-row-head{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0}
+.compat-row-name{font-size:13px;font-weight:500;color:var(--ink)}
+.compat-row-arrow{font-size:12px;color:var(--muted);transition:transform .2s}
+.compat-row-body{font-size:13px;color:var(--muted);line-height:1.65;padding-bottom:.75rem;display:none;font-weight:300}
+.compat-row.open .compat-row-arrow{transform:rotate(180deg)}
+.compat-row.open .compat-row-body{display:block}
+.modal-footer{padding:1.5rem 2rem;border-top:1px solid var(--faint);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pdf-btn{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:11px 24px;cursor:pointer;transition:background .15s}
+.pdf-btn:hover{background:#2e2720}
+.modal-note{font-size:11px;color:var(--muted);font-style:italic}
+</style>
+<!-- ══ Google Analytics 4 ══
+     Replace G-X1W1C91E3M with your Measurement ID
+     Get it at: analytics.google.com → Admin → Data Streams → Web stream details
+-->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X1W1C91E3M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-X1W1C91E3M', {
+    send_page_view: true,
+    cookie_flags: 'SameSite=None;Secure'
+  });
+
+  // ── Analytics helper ──
+  // Wraps gtag so events silently fail if GA hasn't loaded
+  function track(event_name, params) {
+    try {
+      gtag('event', event_name, params || {});
+    } catch(e) {}
+  }
+</script>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing" class="screen active">
+  <p class="land-tag">Relationship Archetype Test</p>
+  <h1 class="land-title">Who are you when you <em>actually</em> love someone?</h1>
+  <p class="land-sub">28 questions. No flattery. Just an uncomfortably accurate look at how you show up.</p>
+  <div class="meta-strip">
+    <div class="meta-cell"><span class="meta-n">28</span><span class="meta-l">Questions</span></div>
+    <div class="meta-cell"><span class="meta-n">5′</span><span class="meta-l">Minutes</span></div>
+    <div class="meta-cell"><span class="meta-n">12</span><span class="meta-l">Types</span></div>
+  </div>
+  <button class="btn-go" onclick="startTest()">Begin the test</button>
+  <p class="land-foot">Free · No signup · Results shown immediately</p>
+</div>
+
+<!-- COMPAT LANDING -->
+<div id="compat-landing" class="screen">
+  <p class="land-tag" style="opacity:1">Compatibility Test</p>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:.3rem;opacity:1">Your friend is</p>
+  <p id="friend-name-display" style="font-family:var(--serif);font-size:1.6rem;color:var(--warm);font-style:italic;margin-bottom:2rem;opacity:1"></p>
+  <h1 class="land-title" style="font-size:clamp(1.6rem,4vw,2.6rem);opacity:1">Find out how you two <em>actually</em> work together</h1>
+  <p class="land-sub" style="opacity:1">Take the same test — we'll generate your compatibility breakdown when you finish.</p>
+  <button class="btn-go" style="opacity:1" onclick="startTest()">Take the test</button>
+  <p class="land-foot" style="opacity:1">Free · About 5 minutes</p>
+</div>
+
+<!-- QUESTION -->
+<div id="qscreen" class="screen">
+  <div class="qhdr">
+    <span class="qhdr-logo">RAT</span>
+    <div class="prog-wrap">
+      <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+      <div class="prog-n" id="prog-n">1 of 28</div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="nav-btn" id="back-btn" onclick="goBack()" disabled>← Back</button>
+      <button class="nav-btn" onclick="skipQ()">Skip →</button>
+    </div>
+  </div>
+  <div class="qbody">
+    <div class="qtag" id="qtag"></div>
+    <div class="qtext" id="qtext"></div>
+    <div class="qopts" id="qopts"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="rscreen" class="screen">
+  <div class="hero-wrap">
+    <div class="blind-card" id="blind-card">
+      <div class="card-deco" id="card-deco"></div>
+      <div class="card-figure" id="card-figure"></div>
+      <div class="card-foot" id="card-foot"></div>
+    </div>
+  </div>
+
+  <p class="share-hint">Screenshot this card · or export below for Instagram</p>
+
+  <!-- Instagram share panel -->
+  <div class="ig-panel">
+    <div class="ig-header">
+      <div class="ig-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+      </div>
+      <span class="ig-header-text">Share to Instagram</span>
+    </div>
+    <div class="ig-card-grid">
+      <button class="ig-card" onclick="exportStory()">
+        <div class="ig-card-icon story-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="19" x2="12" y2="21"/></svg>
+        </div>
+        <span class="ig-card-title">Post to Story</span>
+        <span class="ig-card-desc">Vertical · disappears in 24h · best for instant sharing</span>
+        <span class="ig-card-badge">Popular</span>
+      </button>
+      <button class="ig-card" onclick="exportFeed()">
+        <div class="ig-card-icon feed-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        </div>
+        <span class="ig-card-title">Post to Feed</span>
+        <span class="ig-card-desc">Square · stays on your profile · longer reach</span>
+      </button>
+    </div>
+    <div class="ig-copy-row">
+      <button class="ig-copy-cap" id="copy-caption-btn" onclick="copyCaption()">Copy caption for Instagram</button>
+    </div>
+  </div>
+
+  <!-- Compat link row -->
+  <div class="compat-row">
+    <span class="compat-row-label">Send to a friend →</span>
+    <button class="compat-link-chip" onclick="copyCompatLink()">Copy your link</button>
+    <span style="font-size:11px;color:var(--muted);font-weight:300">When they finish, you both get a compatibility card</span>
+  </div>
+
+  <div class="rbody">
+    <div class="rsec" id="rsec-core" style="animation-delay:.7s"></div>
+    <div class="two-col" id="rtwo" style="animation-delay:.75s"></div>
+    <div class="rsec" id="rsec-rel" style="animation-delay:.8s"></div>
+    <div class="quotes-block" id="rquotes" style="animation-delay:.85s"></div>
+    <div class="compat-cta" style="animation-delay:.9s">
+      <p class="compat-tag">Compatibility</p>
+      <h3 class="compat-title">Send this to someone. Find out how you two actually work.</h3>
+      <p class="compat-desc">Share your unique link. When they finish the test, you both see a full breakdown — what you bring out in each other, and where things get complicated.</p>
+      <div class="compat-link-row">
+        <span class="compat-url" id="compat-url-el"></span>
+        <button class="compat-copy" onclick="copyCompatLink()">Copy</button>
+      </div>
+    </div>
+    <div class="unlock-box" style="animation-delay:.95s">
+      <p class="unlock-tag">Unlock full report — $4.99</p>
+      <h3 class="unlock-title" id="unlock-title-el"></h3>
+      <p class="unlock-desc" id="unlock-desc-el"></p>
+      <button class="btn-warm" onclick="goToStripe()">Get the full report — $4.99</button>
+      <p style="font-size:11px;color:var(--muted);margin-top:.75rem;font-weight:300">
+        Secure payment by Stripe · One-time · No subscription
+      </p>
+    </div>
+    <button class="retake" style="animation-delay:1s" onclick="retake()">Retake the test</button>
+  </div>
+</div>
+
+<!-- COMPAT RESULT -->
+<div id="compat-result" class="screen">
+  <div class="hero-wrap" style="opacity:1">
+    <div class="blind-card" id="compat-blind-card">
+      <div class="card-deco" id="compat-card-deco"></div>
+      <div class="card-figure" id="compat-card-figure" style="min-height:200px"></div>
+      <div class="card-foot" id="compat-card-foot"></div>
+    </div>
+  </div>
+  <p class="share-hint" style="opacity:1">Screenshot this · or export for Instagram</p>
+  <div class="ig-panel" style="opacity:1">
+    <div class="ig-header">
+      <div class="ig-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+      </div>
+      <span class="ig-header-text">Share to Instagram</span>
+    </div>
+    <div class="ig-card-grid">
+      <button class="ig-card" onclick="exportCompatStory()">
+        <div class="ig-card-icon story-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="19" x2="12" y2="21"/></svg>
+        </div>
+        <span class="ig-card-title">Post to Story</span>
+        <span class="ig-card-desc">Vertical · disappears in 24h · best for instant sharing</span>
+        <span class="ig-card-badge">Popular</span>
+      </button>
+      <button class="ig-card" onclick="exportCompatFeed()">
+        <div class="ig-card-icon feed-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        </div>
+        <span class="ig-card-title">Post to Feed</span>
+        <span class="ig-card-desc">Square · stays on your profile · longer reach</span>
+      </button>
+    </div>
+    <div class="ig-copy-row">
+      <button class="ig-copy-cap" onclick="copyCompatCaption()">Copy caption for Instagram</button>
+    </div>
+  </div>
+  <div class="rbody"><div id="compat-body" style="opacity:1"></div><button class="retake" style="opacity:1;margin-top:2rem" onclick="retake()">Take the test again</button></div>
+</div>
+
+<!-- Canvases -->
+<canvas id="cv-story" width="1080" height="1920"></canvas>
+<canvas id="cv-feed" width="1080" height="1080"></canvas>
+<canvas id="cv-compat-story" width="1080" height="1920"></canvas>
+<canvas id="cv-compat-feed" width="1080" height="1080"></canvas>
+
+<script>
+/* ══════════════════════════════════════
+   QUESTIONS
+══════════════════════════════════════ */
+const QUESTIONS=[
+  {ax:'A',tag:'On how much you give',q:"It's midnight. Your friend texts \"you up? kinda struggling rn.\" Your gut reaction:",opts:[{t:'Call them immediately — texting feels wrong for this',s:3},{t:'Text back \"always\" and ask what\'s going on',s:2},{t:'Reply \"here\" and wait to see what they actually need',s:1}]},
+  {ax:'A',tag:'On how much you give',q:"You're completely drained — zero social battery. A close friend needs to vent for an hour. You:",opts:[{t:"Show up anyway. Their need comes first, I'll recharge later",s:3},{t:"Say yes but warn them I'm running low",s:2},{t:"Tell them honestly — I've got nothing right now, can we do tomorrow?",s:1}]},
+  {ax:'A',tag:'On how much you give',q:"When you actually care about someone, what you give them is:",opts:[{t:"All of it — time, attention, and probably remembering stuff they said months ago",s:3},{t:"Real presence when I can, honest communication when I can't",s:2},{t:"Space and respect. That's my version of care",s:1}]},
+  {ax:'A',tag:'On how much you give',q:"Someone you just met is clearly having a rough time. You:",opts:[{t:"Ask if they're okay before I've even thought about it",s:3},{t:"Stay nearby and let them lead if they want to talk",s:2},{t:"Give them room — we don't know each other like that",s:1}]},
+  {ax:'A',tag:'On how much you give',q:"Honestly, in your close friendships you've usually been:",opts:[{t:"The one initiating, remembering, showing up — lowkey doing the most",s:3},{t:"Pretty even — shifts person to person",s:2},{t:"More on the receiving end, not by design",s:1}]},
+  {ax:'A',tag:'On how much you give',q:"You find out your friend has been going through something major and didn't tell you. You feel:",opts:[{t:"Genuinely hurt — aren't we the people who tell each other things?",s:3},{t:"A little surprised, but people process differently, I get it",s:2},{t:"Totally fine. I wouldn't necessarily tell them right away either",s:1}]},
+  {ax:'A',tag:'On how much you give',q:"Your definition of being a good friend is:",opts:[{t:"Noticing before they ask. Showing up before they have to say something",s:3},{t:"Being there when it counts, honest when I can't be",s:2},{t:"Respecting their space and being reliable when they reach out",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"You've been with a new person constantly. Old friends say you seem different. You:",opts:[{t:"Probably true — I absorb the people I'm close to, it's just how I work",s:3},{t:"Maybe a little? New people bring out different sides",s:2},{t:"Haven't changed. That's kind of my whole thing",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"Someone you love has a really strong take on something you're neutral about. You:",opts:[{t:"Catch their energy and start caring about it too — it's contagious",s:3},{t:"Listen genuinely but don't automatically adopt their position",s:2},{t:"Support their passion without it becoming mine",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"In a relationship, when your partner is in a bad headspace, you tend to:",opts:[{t:"Feel it immediately — their mood bleeds into mine, no cap",s:3},{t:"Notice and show up for them, but stay grounded in myself",s:2},{t:"Take it seriously without being pulled in",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"After a big breakup or losing a close friendship, you typically:",opts:[{t:"Feel lost for a while — like part of my identity left with them",s:3},{t:"Go through it, then gradually come back to myself",s:2},{t:"Miss them, but I'm still me — that part doesn't really change",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"People who know you across different social circles would say you:",opts:[{t:"Are genuinely different depending on the crowd — you read the room",s:3},{t:"Have the same core but adjust your energy",s:2},{t:"Are basically the same everywhere. What you see is what you get",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"You're in a close relationship. How does your sense of self feel?",opts:[{t:"Woven in with the other person — that's what closeness means to me",s:3},{t:"Connected but still distinct — I bring myself into it",s:2},{t:"Completely my own. A relationship adds to me but doesn't rewrite me",s:1}]},
+  {ax:'B',tag:'On how stable you stay',q:"After a significant relationship ends, how long until you feel like yourself?",opts:[{t:"A while — a big relationship shapes who I am",s:3},{t:"I grieve it, then slowly find my way back",s:2},{t:"I miss the person, but my baseline doesn't really shift",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"In a room full of people you mostly know, you naturally:",opts:[{t:"Become the gravitational center — conversation just finds you",s:3},{t:"Flow in and out depending on the vibe",s:2},{t:"Find your spot and let things come to you",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"You notice a friendship is slowly fading. You:",opts:[{t:"Reach out — important things don't get to just quietly disappear",s:3},{t:"Send a casual check-in and see what comes back",s:2},{t:"Let it run its course. If it's meant to continue, it will",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"Someone new joins your group and is clearly an outsider. You:",opts:[{t:"Bring them in — I know what that feels like and I won't ignore it",s:3},{t:"Talk to them if the moment presents itself naturally",s:2},{t:"Give them space to find their footing on their own",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"You meet someone who genuinely has main character energy — interesting, magnetic. You:",opts:[{t:"Suggest exchanging contacts before the conversation's even over",s:3},{t:"Enjoy it fully and hope there's a next time",s:2},{t:"Appreciate the moment without necessarily chasing a follow-up",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"Your social battery honestly runs:",opts:[{t:"High — being around people charges me, alone time drains me",s:3},{t:"Both ways equally — I need people and I need solitude",s:2},{t:"Low and selective — I choose carefully and need a lot of alone time",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"Someone you care about starts going cold on you. You:",opts:[{t:"Follow up — gently, but I want to know what's actually happening",s:3},{t:"Give it a couple of days, then send one message",s:2},{t:"Give them full space. I'll be here when they're ready",s:1}]},
+  {ax:'C',tag:'On how you move toward people',q:"For you, emotional closeness in a relationship is:",opts:[{t:"Something you actively build — it doesn't just happen on its own",s:3},{t:"Important, but you let it develop at its own pace",s:2},{t:"Something that takes real time — rushed closeness gives you the ick",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"You're deciding whether to cut off a friendship. What's actually driving it:",opts:[{t:"How I feel in their presence — drained or energized?",s:3},{t:"A mix — gut check plus thinking it through rationally",s:2},{t:"Whether the relationship is net positive when I actually analyze it",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"Your partner does something that bothers you. First move:",opts:[{t:"Say something almost immediately — I can't sit on it",s:3},{t:"Give it a beat, then bring it up when I'm calmer",s:2},{t:"Figure out what outcome I actually want before I open my mouth",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"In an argument, you lead with:",opts:[{t:"The feeling — I literally cannot separate emotion from the conversation",s:3},{t:"Both — what I think and how I feel are equally relevant",s:2},{t:"The facts — what happened, what's the issue, what needs to change",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"Making a big relationship decision, you run on:",opts:[{t:"Gut, mostly. If it feels off, that's already the answer",s:3},{t:"Gut plus logic — both have to check out",s:2},{t:"Analysis. Feelings are data but they're not the conclusion",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"A friend shares something really vulnerable. Your first response:",opts:[{t:"Feel it with them — their emotion actually lands in me",s:3},{t:"Be fully present but stay grounded in myself",s:2},{t:"Think about what they need and how to actually help",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"When you're in conflict, you're more likely to:",opts:[{t:"Overshare — it's coming from a real place and I can't always stop it",s:3},{t:"Try to be honest without losing the thread of what I want",s:2},{t:"Undershare — I need to think before I say anything",s:1}]},
+  {ax:'D',tag:'On what you run on',q:"When someone near you is really not okay, you:",opts:[{t:"Get pulled into it — hard to stay neutral when someone I care about is struggling",s:3},{t:"Feel it and respond without getting completely absorbed",s:2},{t:"Take it seriously but process it separately from my own state",s:1}]},
+];
+
+/* ══════════════════════════════════════
+   ARCHETYPES
+══════════════════════════════════════ */
+const A={
+'THE FIXER':{bg:'#f5e8d8',accent:'#c07840',axes:{A:'Giving',B:'Anchored',C:'Pulling',D:'Logic'},hook:'"You didn\'t ask for advice. But here it is anyway."',core:'You love people with the intensity of someone who genuinely believes problems are solvable. Your instinct when someone is struggling isn\'t to sit with them in the feeling — it\'s to open a mental spreadsheet and start working through options. This makes you one of the most reliable people anyone will ever know. It also means you\'ve stayed up until 2am helping someone who absolutely did not deserve it — and you\'d do it again.',strength:'You show up. Fully, consistently, practically. When everything falls apart, you\'re the person people call — not for a shoulder to cry on, but because they know you\'ll actually make something happen.',blind:'You sometimes fix things that didn\'t need fixing, and miss the thing that did. Because you\'re so good at helping others, you\'ve quietly built an identity around being the capable one — which makes it very hard to ask for help yourself.',rel:'You are steady, thoughtful, and present. The tension comes when your care starts to feel like management — when you solve the problem before the other person has finished feeling it.',quotes:['"They\'re the first person I call when something goes wrong."','"Sometimes I just want to vent and they immediately start problem-solving."','"Incredibly loyal. Will not let you fail."'],share:'"I\'m The Fixer. My love language is unsolicited solutions."',ut:'Who you become when no one\'s looking after you',ud:'Your shadow type, which archetypes exhaust you most, and why you\'re secretly terrified of being the one who needs help.',caption:'I just took the Relationship Archetype Test and got The Fixer 🛠️\n\n"My love language is unsolicited solutions."\n\nWhat\'s yours? Link in bio 👆',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#d4c4b0" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#c07840"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#c07840"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#c07840"/><rect x="12" y="85" width="24" height="38" rx="10" fill="#c07840"/><rect x="104" y="85" width="24" height="38" rx="10" fill="#c07840"/><rect x="100" y="88" width="30" height="22" rx="4" fill="#fff8f0" opacity=".95"/><line x1="104" y1="95" x2="126" y2="95" stroke="#c07840" stroke-width="1.5" opacity=".7"/><line x1="104" y1="100" x2="126" y2="100" stroke="#c07840" stroke-width="1.5" opacity=".7"/><line x1="104" y1="105" x2="122" y2="105" stroke="#c07840" stroke-width="1.5" opacity=".7"/><circle cx="70" cy="48" r="36" fill="#f0c8a0"/><ellipse cx="70" cy="26" rx="32" ry="18" fill="#3a2010"/><ellipse cx="70" cy="30" rx="28" ry="12" fill="#3a2010"/><ellipse cx="55" cy="50" rx="5" ry="6" fill="#f5d8b8"/><ellipse cx="85" cy="50" rx="5" ry="6" fill="#f5d8b8"/><ellipse cx="57" cy="48" rx="3.5" ry="4" fill="#2a1a08"/><ellipse cx="83" cy="48" rx="3.5" ry="4" fill="#2a1a08"/><ellipse cx="58" cy="47" rx="1.2" ry="1.4" fill="#fff" opacity=".8"/><ellipse cx="84" cy="47" rx="1.2" ry="1.4" fill="#fff" opacity=".8"/><path d="M62,62 Q70,67 78,62" stroke="#a06030" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`},
+
+'THE FORTRESS':{bg:'#e0ecf4',accent:'#3a6a8a',axes:{A:'Guarded',B:'Anchored',C:'Spacious',D:'Logic'},hook:'"I\'m an open book. You just need the right clearance level."',core:'Self-contained, deliberate, genuinely baffled by people who share their feelings with strangers on the internet. You don\'t need much from others — and you\'ve always been quietly proud of that. The list of people you\'ve truly let in is short. The loyalty is absolute.',strength:'Unshakeable. When the world goes sideways, you don\'t spiral — you think. You tell the truth even when it\'s uncomfortable. People trust you with their real problems because you\'ll take it seriously.',blind:'You\'ve become so good at not needing people that you\'ve occasionally convinced yourself you don\'t. You can underestimate how much others need emotional reciprocity — not just reliability, but visibility.',rel:'The people who make it past your outer layers describe you as one of the most genuine relationships they\'ve had. The challenge is getting there — you wait to see if they\'ll walk the distance.',quotes:['"You never really know what they\'re thinking."','"But when they do open up, it\'s the realest conversation you\'ll have all year."','"I trust them completely. I\'m just not sure they need me."'],share:'"I\'m The Fortress. I have feelings. They\'re just classified."',ut:'When the walls stop being protection',ud:'Your shadow type, the one archetype that can actually get through to you, and why you keep people exactly far enough away.',caption:'I just took the Relationship Archetype Test and got The Fortress 🏰\n\n"I have feelings. They\'re just classified."\n\nFind out yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#b0c8d8" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#3a6a8a"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#3a6a8a"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#3a6a8a"/><rect x="12" y="85" width="24" height="36" rx="10" fill="#3a6a8a"/><rect x="104" y="85" width="24" height="36" rx="10" fill="#3a6a8a"/><rect x="26" y="88" width="16" height="22" rx="6" fill="#2a5070"/><path d="M28,110 L34,96 L40,110Z" fill="#2a5070"/><rect x="50" y="96" width="40" height="28" rx="6" fill="#2a5070" opacity=".5"/><rect x="55" y="101" width="14" height="10" rx="3" fill="#5a9aba" opacity=".6"/><rect x="73" y="101" width="14" height="10" rx="3" fill="#5a9aba" opacity=".6"/><circle cx="70" cy="48" r="36" fill="#d8eaf4"/><rect x="36" y="18" width="68" height="20" rx="4" fill="#1a3048"/><rect x="40" y="16" width="12" height="10" rx="2" fill="#1a3048"/><rect x="60" y="16" width="12" height="10" rx="2" fill="#1a3048"/><rect x="80" y="16" width="12" height="10" rx="2" fill="#1a3048"/><ellipse cx="58" cy="50" rx="4.5" ry="5" fill="#b8d4e8"/><ellipse cx="82" cy="50" rx="4.5" ry="5" fill="#b8d4e8"/><ellipse cx="58" cy="49" rx="3" ry="3.5" fill="#1a3048"/><ellipse cx="82" cy="49" rx="3" ry="3.5" fill="#1a3048"/><ellipse cx="59" cy="48" rx="1" ry="1.2" fill="#fff" opacity=".7"/><ellipse cx="83" cy="48" rx="1" ry="1.2" fill="#fff" opacity=".7"/><path d="M63,63 L77,63" stroke="#8aaccc" stroke-width="2" stroke-linecap="round"/></svg>`},
+
+'THE MIRROR':{bg:'#f0ebfa',accent:'#6040a8',axes:{A:'Giving',B:'Adaptive',C:'Pulling',D:'Feeling'},hook:'"I just feel like we really understand each other."',core:'You absorb the people around you — their energy, their cadence, their sense of humour. You don\'t imitate; you resonate. When someone feels truly seen by you, they don\'t notice that you\'ve quietly started reflecting them back. The harder question — the one you ask yourself at 11pm — is: who are you when nobody\'s watching?',strength:'Extraordinary emotional range. You move between worlds with a fluency that looks effortless. You make people feel like the most interesting person in the room.',blind:'You sometimes lose the plot on what you actually want. You\'ve spent so long tuning into others that your own frequency is sometimes hard to hear.',rel:'Deeply romantic, deeply present. Partners fall fast, because you make falling feel safe. The challenge is staying — over time the person who seemed to understand them perfectly starts to seem harder to understand themselves.',quotes:['"Every ex thought she was their soulmate."','"He remembers everything you\'ve ever told him."','"I\'m never quite sure how she actually feels. But being around her feels incredible."'],share:'"I\'m The Mirror. I didn\'t lose myself — I just lent it out."',ut:'What happens when you\'ve absorbed the wrong person',ud:'Your shadow type, how to stay connected without disappearing, and which archetype will ask you the questions you need to be asked.',caption:'I just took the Relationship Archetype Test and got The Mirror 🪞\n\n"I didn\'t lose myself — I just lent it out."\n\nTake yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#c8b8e0" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#8060b8"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#8060b8"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#8060b8"/><rect x="12" y="85" width="24" height="38" rx="10" fill="#8060b8"/><rect x="104" y="85" width="24" height="38" rx="10" fill="#8060b8"/><rect x="100" y="82" width="26" height="34" rx="6" fill="#d8c8f0" stroke="#a080d8" stroke-width="1.5"/><ellipse cx="113" cy="99" rx="9" ry="11" fill="#f0ebfa" opacity=".8"/><ellipse cx="113" cy="94" rx="4" ry="5" fill="#b898e0" opacity=".5"/><circle cx="70" cy="48" r="36" fill="#e8d8f8"/><ellipse cx="70" cy="24" rx="30" ry="16" fill="#4a2880"/><path d="M40,30 Q55,50 40,52" fill="#4a2880"/><path d="M100,30 Q85,50 100,52" fill="#4a2880"/><ellipse cx="58" cy="49" rx="5" ry="6" fill="#d8c0f0"/><ellipse cx="82" cy="49" rx="5" ry="6" fill="#d8c0f0"/><ellipse cx="57" cy="48" rx="3.5" ry="4" fill="#4a2880"/><ellipse cx="83" cy="48" rx="3.5" ry="4" fill="#4a2880"/><ellipse cx="58" cy="47" rx="1.2" ry="1.4" fill="#fff" opacity=".8"/><ellipse cx="84" cy="47" rx="1.2" ry="1.4" fill="#fff" opacity=".8"/><path d="M62,62 Q70,67 78,62" stroke="#6040a0" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="58" cy="36" r="3" fill="#c8a0f0" opacity=".8"/><circle cx="82" cy="36" r="3" fill="#c8a0f0" opacity=".8"/></svg>`},
+
+'THE GHOST':{bg:'#e8f4ee',accent:'#357a55',axes:{A:'Guarded',B:'Adaptive',C:'Spacious',D:'Feeling'},hook:'"Sorry, I\'ve just been really busy lately."',core:'You value connection. In the abstract, you think about people fondly, intend to reach out. And then somehow weeks pass, and you surface from your own interior world to find seven unread threads and a mild sense of guilt you\'ll manage later. This isn\'t cruelty — it\'s orbit.',strength:'When you do show up, you\'re fully there. You skip straight to the conversation that matters. When The Ghost is present, it feels like a gift — because it genuinely is.',blind:'You underestimate how much your absence lands on people. What feels like normal rhythm to you can feel like abandonment to someone who cares.',rel:'You are loving in waves. Intense, vivid, present — and then gone. The best relationships have been with people who trust that absence isn\'t indifference.',quotes:['"I never know when I\'ll hear from them."','"But when I do, it\'s always worth it."','"I\'ve stopped taking it personally. Mostly."'],share:'"I\'m The Ghost. I care. I just care from a distance."',ut:'When you disappear from yourself, not just from others',ud:'Your shadow type, what kind of relationship actually works for you, and what you need to stop doing to the people who love you.',caption:'I just took the Relationship Archetype Test and got The Ghost 👻\n\n"I care. I just care from a distance."\n\nIs this you too? 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#a0c8b4" opacity=".3"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#50906a" opacity=".55"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#50906a" opacity=".55"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#50906a" opacity=".65"/><rect x="12" y="85" width="24" height="36" rx="10" fill="#50906a" opacity=".55"/><rect x="104" y="85" width="24" height="36" rx="10" fill="#50906a" opacity=".55"/><circle cx="70" cy="48" r="36" fill="#c8e8d8" opacity=".8"/><ellipse cx="70" cy="26" rx="28" ry="16" fill="#2a5840" opacity=".75"/><ellipse cx="56" cy="48" rx="5" ry="6" fill="#b0d8c4" opacity=".75"/><ellipse cx="84" cy="48" rx="5" ry="6" fill="#b0d8c4" opacity=".75"/><ellipse cx="56" cy="47" rx="3" ry="3.5" fill="#2a5840" opacity=".65"/><ellipse cx="84" cy="47" rx="3" ry="3.5" fill="#2a5840" opacity=".65"/><path d="M63,63 L77,63" stroke="#60a87a" stroke-width="2" stroke-linecap="round" opacity=".6"/><circle cx="96" cy="70" r="4" fill="#50906a" opacity=".2"/><circle cx="108" cy="54" r="2.5" fill="#50906a" opacity=".15"/><text x="96" y="48" font-size="13" fill="#50906a" opacity=".4" font-family="sans-serif">···</text></svg>`},
+
+'THE ANCHOR':{bg:'#eaf4e4',accent:'#3d7030',axes:{A:'Giving',B:'Anchored',C:'Pulling',D:'Feeling'},hook:'"It\'s fine. I\'ve got it. No really, I\'ve got it."',core:'You are the person everyone calls first. Not because you\'re the most exciting — because you\'re the one who shows up. Consistently, reliably, without needing to be asked twice. You rarely ask for help. Partly because you can usually handle it. Partly because asking feels like admitting you can\'t.',strength:'You create stability everywhere you go. Your word means something. Your presence means something. In a world that frequently does not hold together, you do.',blind:'You\'ve been holding things together for so long you\'ve forgotten it\'s optional. You give abundantly and ask for little — which eventually creates an imbalance you don\'t acknowledge until you\'re exhausted.',rel:'You are the foundation. Steady, warm, dependable. Partners who love you want to give back — and you make it hard for them to. Let someone take care of you. It is allowed.',quotes:['"The most reliable person I know."','"I wish they\'d let me help them sometimes."','"They act like they\'re fine until suddenly they\'re not fine at all."'],share:'"I\'m The Anchor. I hold everything together — including my feelings."',ut:'What happens when you\'ve been holding on too long',ud:'Your shadow type, the exact words to say when you need help, and why being cared for isn\'t weakness.',caption:'I just took the Relationship Archetype Test and got The Anchor ⚓️\n\n"I hold everything together — including my feelings."\n\nFind your type 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="42" ry="7" fill="#98c880" opacity=".35"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#508840"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#508840"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#508840"/><rect x="8" y="82" width="28" height="40" rx="12" fill="#508840"/><rect x="104" y="82" width="28" height="40" rx="12" fill="#508840"/><circle cx="8" cy="122" r="10" fill="#508840"/><circle cx="132" cy="122" r="10" fill="#508840"/><circle cx="70" cy="48" r="36" fill="#c8e4b8"/><ellipse cx="70" cy="24" rx="30" ry="15" fill="#243818"/><ellipse cx="70" cy="26" rx="24" ry="10" fill="#243818"/><ellipse cx="56" cy="48" rx="5" ry="6" fill="#b4d8a4"/><ellipse cx="84" cy="48" rx="5" ry="6" fill="#b4d8a4"/><ellipse cx="56" cy="47" rx="3" ry="3.5" fill="#243818"/><ellipse cx="84" cy="47" rx="3" ry="3.5" fill="#243818"/><ellipse cx="57" cy="46" rx="1" ry="1.2" fill="#fff" opacity=".7"/><ellipse cx="85" cy="46" rx="1" ry="1.2" fill="#fff" opacity=".7"/><path d="M62,62 Q70,67 78,62" stroke="#387028" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`},
+
+'THE OBSERVER':{bg:'#e4eef8',accent:'#2a5888',axes:{A:'Guarded',B:'Adaptive',C:'Pulling',D:'Feeling'},hook:'"I knew that about you before you did."',core:'You watch, absorb, and understand people with unsettling accuracy — but from a careful distance. Relationships fascinate you more as puzzles than as needs. You have strong opinions about everyone and share them with almost no one. This makes you quietly powerful and occasionally unknowable.',strength:'You understand people in ways they don\'t understand themselves. You give counsel that actually lands because you\'ve been paying attention. You don\'t project. You see.',blind:'Understanding people and connecting with them are different things. You\'re exceptional at the first. The second requires vulnerability — being seen.',rel:'Partners feel seen by you — maybe more than anyone has ever made them feel. Then they realise they don\'t quite see you. That asymmetry, left unaddressed, becomes distance.',quotes:['"They see right through me, in a good way."','"I sometimes wonder if they\'re in the friendship or just studying it."','"The most interesting conversations I\'ve ever had."'],share:'"I\'m The Observer. I see everything. I\'m just not telling."',ut:'When detachment tips into loneliness',ud:'Your shadow type, the questions you need someone to ask you, and how to stop watching your own relationships from a distance.',caption:'I just took the Relationship Archetype Test and got The Observer 🔭\n\n"I see everything. I\'m just not telling."\n\nWhat\'s yours? 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#90b4d8" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#3a6898"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#3a6898"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#3a6898"/><rect x="10" y="85" width="26" height="36" rx="10" fill="#3a6898"/><rect x="104" y="85" width="26" height="36" rx="10" fill="#3a6898"/><rect x="8" y="91" width="28" height="18" rx="5" fill="#2a507a"/><circle cx="8" cy="100" r="5" fill="#1a3858"/><rect x="11" y="97" width="24" height="6" rx="3" fill="#5888b8" opacity=".6"/><rect x="38" y="98" width="4" height="4" rx="1" fill="#1a3858"/><circle cx="70" cy="48" r="36" fill="#c0d4ec"/><ellipse cx="70" cy="25" rx="30" ry="16" fill="#1a2e48"/><ellipse cx="56" cy="48" rx="5" ry="6" fill="#a8c4e0"/><ellipse cx="84" cy="48" rx="5" ry="6" fill="#a8c4e0"/><ellipse cx="55" cy="47" rx="4" ry="4.5" fill="#1a2e48"/><ellipse cx="85" cy="47" rx="4" ry="4.5" fill="#1a2e48"/><ellipse cx="56" cy="46" rx="1.5" ry="1.8" fill="#fff" opacity=".75"/><ellipse cx="86" cy="46" rx="1.5" ry="1.8" fill="#fff" opacity=".75"/><path d="M64,63 L76,63" stroke="#507aaa" stroke-width="2" stroke-linecap="round"/></svg>`},
+
+'THE WILDFIRE':{bg:'#faeae0',accent:'#c03318',axes:{A:'Giving',B:'Adaptive',C:'Spacious',D:'Feeling'},hook:'"I\'m not too much. You\'re just not enough."',core:'You love hard. Fully, visibly, without apology. When you\'re in, you\'re completely in. You pivot fast. You feel things quickly and process them out loud. You don\'t do slow burns — you do immediate, total combustion and figure out the details later.',strength:'You make people feel chosen, seen, electrifyingly alive. No one who has been loved by The Wildfire forgets it. Your capacity for feeling is not a flaw. It is, at full height, a superpower.',blind:'You can exhaust the people who love you, not because you\'re bad, but because sustaining that heat is hard. Your sense of self can blur during the intensity.',rel:'Electric at the beginning. Genuinely. The challenge is the middle — when intensity needs to become consistency, and passion needs to become patience.',quotes:['"Absolutely magnetic. I was obsessed."','"I couldn\'t keep up."','"I\'ve never felt more alive than when we were together."'],share:'"I\'m The Wildfire. I\'m not sorry for the heat."',ut:'What\'s left when there\'s nothing to burn',ud:'Your shadow type, how to stop starting over with new people when the old fire gets complicated.',caption:'I just took the Relationship Archetype Test and got The Wildfire 🔥\n\n"I\'m not sorry for the heat."\n\nFind your type 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#e09880" opacity=".4"/><path d="M52,182 Q48,155 50,140 Q55,138 58,148 Q62,136 65,140 L65,182Z" fill="#d84020"/><path d="M75,182 L75,140 Q78,136 82,148 Q85,138 90,140 Q92,155 88,182Z" fill="#d84020"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#d84020"/><rect x="10" y="82" width="26" height="40" rx="10" fill="#d84020"/><rect x="104" y="82" width="26" height="40" rx="10" fill="#d84020"/><path d="M10,84 Q4,92 6,100 Q4,108 10,116" stroke="#f06040" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M130,84 Q136,92 134,100 Q136,108 130,116" stroke="#f06040" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="70" cy="48" r="36" fill="#f0b890"/><path d="M36,32 Q50,10 70,16 Q90,10 104,32 Q108,20 100,14 Q86,2 70,4 Q54,2 40,14 Q32,20 36,32Z" fill="#2a0e08"/><path d="M55,20 Q50,10 58,6" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/><path d="M70,16 Q68,4 74,2" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/><path d="M85,20 Q92,8 88,4" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#f8c8a0"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#f8c8a0"/><ellipse cx="56" cy="49" rx="3.5" ry="4" fill="#2a0e08"/><ellipse cx="84" cy="49" rx="3.5" ry="4" fill="#2a0e08"/><ellipse cx="57" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><ellipse cx="85" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><path d="M61,63 Q70,69 79,63" stroke="#b02010" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`},
+
+'THE ARCHITECT':{bg:'#f4f0e4',accent:'#705828',axes:{A:'Guarded',B:'Anchored',C:'Spacious',D:'Logic'},hook:'"I don\'t do drama. I do systems."',core:'You approach connection the way others approach good design: with intention, clear expectations, functional boundaries, and a preference for things built to last. Your relationships are chosen, not accumulated. You hold your ground. You do not change who you are for anyone.',strength:'Extraordinary reliability. What The Architect says, they mean. What they commit to, they deliver. People feel safe with you not because you\'re warm, but because you\'re trustworthy.',blind:'You can mistake emotional fluency for irrationality and dismiss it accordingly. Feelings are not inefficiencies — they\'re information.',rel:'Your partner always knows where they stand with you. The tension is that they sometimes want to know how you feel, not just what you think. Practice answering both.',quotes:['"Extremely reliable. Somehow still hard to reach."','"If they\'re in your corner, you know it means something."','"I wish they\'d just feel something out loud occasionally."'],share:'"I\'m The Architect. Love is a blueprint, not a feeling."',ut:'When structure becomes control',ud:'Your shadow type, the one question that unlocks everything, and why you\'ve been avoiding it.',caption:'I just took the Relationship Archetype Test and got The Architect 📐\n\n"Love is a blueprint, not a feeling."\n\nTake yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#c8b490" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#907040"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#907040"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#907040"/><rect x="10" y="84" width="26" height="38" rx="10" fill="#907040"/><rect x="104" y="84" width="26" height="38" rx="10" fill="#907040"/><rect x="4" y="88" width="32" height="24" rx="4" fill="#f8f4e8" opacity=".95" stroke="#b08850" stroke-width="1"/><line x1="8" y1="94" x2="32" y2="94" stroke="#907040" stroke-width="1" opacity=".6"/><line x1="8" y1="99" x2="30" y2="99" stroke="#907040" stroke-width="1" opacity=".6"/><line x1="8" y1="104" x2="26" y2="104" stroke="#907040" stroke-width="1" opacity=".6"/><line x1="12" y1="108" x2="32" y2="92" stroke="#c09050" stroke-width="1.5" opacity=".35"/><circle cx="70" cy="48" r="36" fill="#e8d0a8"/><rect x="38" y="18" width="64" height="22" rx="4" fill="#281e0c"/><ellipse cx="70" cy="20" rx="20" ry="8" fill="#382c14"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#f0dcb8"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#f0dcb8"/><ellipse cx="56" cy="49" rx="3" ry="3.5" fill="#281e0c"/><ellipse cx="84" cy="49" rx="3" ry="3.5" fill="#281e0c"/><ellipse cx="57" cy="48" rx="1" ry="1.2" fill="#fff" opacity=".7"/><ellipse cx="85" cy="48" rx="1" ry="1.2" fill="#fff" opacity=".7"/><path d="M63,63 L77,63" stroke="#705030" stroke-width="2" stroke-linecap="round"/></svg>`},
+
+'THE CARETAKER':{bg:'#faf0e4',accent:'#a85c28',axes:{A:'Giving',B:'Anchored',C:'Pulling',D:'Feeling'},hook:'"Have you eaten today? Here, I made extra."',core:'You express love through acts. Through presence. Through the remembered detail, the prepared meal, the showing-up-when-it-matters that has become so instinctive you barely notice. You are the warmest person in almost every room you enter.',strength:'You create belonging. Wherever The Caretaker is, people feel held — in the way of knowing someone actually cares what happens to them. In a world running low on that thing, you are a renewable resource for it.',blind:'You give so consistently that people forget it\'s a choice. And because you ask for so little, the people who love you don\'t always know how to give back.',rel:'You remember the thing they mentioned once in passing. You notice when something is off before they\'ve said anything. The invitation you\'re allowed to give yourself: let yourself be cared for in return.',quotes:['"They always know exactly what you need."','"I feel terrible that I never asked how they were doing."','"The most generous person I know. I worry about them."'],share:'"I\'m The Caretaker. I give. Sometimes too much. Usually too much."',ut:'What happens when The Caretaker runs out',ud:'Your shadow type, why you give to others what you never give yourself, and how to receive care without apologising for needing it.',caption:'I just took the Relationship Archetype Test and got The Caretaker 🍳\n\n"I give. Sometimes too much. Usually too much."\n\nTake yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#d8a870" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#c88050"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#c88050"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#c88050"/><rect x="10" y="82" width="26" height="40" rx="10" fill="#c88050"/><rect x="104" y="82" width="26" height="40" rx="10" fill="#c88050"/><ellipse cx="22" cy="96" rx="14" ry="8" fill="#f0e0d0" opacity=".95" stroke="#d0a070" stroke-width="1.5"/><ellipse cx="22" cy="93" rx="10" ry="5" fill="#fffaf5" opacity=".8"/><circle cx="17" cy="92" r="2" fill="#ffcc80" opacity=".9"/><circle cx="22" cy="91" r="2.5" fill="#ffdd90" opacity=".9"/><circle cx="27" cy="92" r="2" fill="#ffcc80" opacity=".9"/><circle cx="70" cy="48" r="36" fill="#f4c898"/><path d="M36,28 Q50,8 70,12 Q90,8 104,28 L102,30 Q88,22 70,20 Q52,22 38,30Z" fill="#3c1e08"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#f8d8b0"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#f8d8b0"/><ellipse cx="56" cy="49" rx="3.5" ry="4" fill="#3c1e08"/><ellipse cx="84" cy="49" rx="3.5" ry="4" fill="#3c1e08"/><ellipse cx="57" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><ellipse cx="85" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><path d="M62,63 Q70,69 78,63" stroke="#a05820" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="57" cy="37" r="4" fill="#f0b080" opacity=".7"/><circle cx="83" cy="37" r="4" fill="#f0b080" opacity=".7"/></svg>`},
+
+'THE STRATEGIST':{bg:'#ede8f8',accent:'#502090',axes:{A:'Guarded',B:'Adaptive',C:'Pulling',D:'Logic'},hook:'"I liked you before liking you was obvious."',core:'You had a read on this situation before most people noticed there was a situation. You\'re calculating in the chess-player sense: you see moves ahead, read people accurately, and allocate your emotional investment deliberately.',strength:'You are almost never blindsided. You protect the people you care about practically and emotionally — you see the thing coming before it arrives.',blind:'Strategy, applied to relationships for too long, can start to feel like management rather than love. The people closest to you occasionally want to see you surprised. Off the plan.',rel:'You love with loyalty and attention. The vulnerability is this: letting someone into the strategy room. Real intimacy means letting someone see you figure it out in real time.',quotes:['"I\'ve never felt managed — but I\'ve wondered."','"They\'re always three steps ahead. Impressive and slightly unnerving."','"When they decide you matter, you really feel it."'],share:'"I\'m The Strategist. I\'m not playing games. I\'m winning them."',ut:'When strategy stops being about connection',ud:'Your shadow type, the moment strategy becomes control, and how to let someone love you without a plan.',caption:'I just took the Relationship Archetype Test and got The Strategist ♟️\n\n"I\'m not playing games. I\'m winning them."\n\nTake yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#b0a0d8" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#6840a8"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#6840a8"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#6840a8"/><rect x="10" y="84" width="26" height="38" rx="10" fill="#6840a8"/><rect x="104" y="84" width="26" height="38" rx="10" fill="#6840a8"/><rect x="98" y="82" width="34" height="30" rx="4" fill="#f0ecfc" opacity=".95" stroke="#8860c8" stroke-width="1"/><rect x="100" y="84" width="14" height="14" rx="1" fill="none" stroke="#6840a8" stroke-width="1" opacity=".6"/><rect x="116" y="84" width="14" height="14" rx="1" fill="none" stroke="#6840a8" stroke-width="1" opacity=".6"/><rect x="100" y="100" width="14" height="10" rx="1" fill="none" stroke="#6840a8" stroke-width="1" opacity=".6"/><rect x="116" y="100" width="14" height="10" rx="1" fill="none" stroke="#6840a8" stroke-width="1" opacity=".6"/><circle cx="107" cy="91" r="4" fill="#6840a8" opacity=".8"/><circle cx="123" cy="105" r="4" fill="#6840a8" opacity=".8"/><circle cx="70" cy="48" r="36" fill="#d8c8f0"/><ellipse cx="70" cy="22" rx="30" ry="16" fill="#2c1858"/><path d="M40,32 Q55,48 40,54" fill="#2c1858"/><path d="M100,32 Q85,48 100,54" fill="#2c1858"/><ellipse cx="56" cy="49" rx="5.5" ry="6.5" fill="#c0a8e8"/><ellipse cx="84" cy="49" rx="5.5" ry="6.5" fill="#c0a8e8"/><ellipse cx="55" cy="48" rx="4" ry="4.5" fill="#2c1858"/><ellipse cx="85" cy="48" rx="4" ry="4.5" fill="#2c1858"/><ellipse cx="56" cy="47" rx="1.5" ry="1.8" fill="#fff" opacity=".8"/><ellipse cx="86" cy="47" rx="1.5" ry="1.8" fill="#fff" opacity=".8"/><path d="M63,63 Q70,67 77,63" stroke="#4820a0" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`},
+
+'THE SPARK':{bg:'#faf4e0',accent:'#906010',axes:{A:'Giving',B:'Adaptive',C:'Pulling',D:'Logic'},hook:'"I don\'t know what I want but I\'ll feel it deeply when I find it."',core:'Your relationships have the texture of great short stories: vivid, emotionally precise, sometimes frustratingly unresolved. You lead with feeling — genuine, attentive feeling that picks up on the temperature of a room. Your inner world is rich. Your outer expression of it is fluid.',strength:'Rare emotional intelligence combined with genuine warmth. You create connections that feel real immediately — not because you\'re performing, but because you actually are that present.',blind:'You feel things so fully at the beginning that the natural settling of a relationship can read, to you, like fading — even when it isn\'t.',rel:'You are wonderful to fall for and genuinely hard to keep up with. The relationship that works for you is with someone who finds your motion interesting rather than alarming.',quotes:['"Every relationship is incredibly intense at first."','"I\'m not sure what they want long-term."','"Being loved by them, while it lasted, was genuinely something."'],share:'"I\'m The Spark. Consistent? No. Unforgettable? Absolutely."',ut:'When motion becomes avoidance',ud:'Your shadow type, how to let something be good without needing it to be electric, and why that\'s not settling.',caption:'I just took the Relationship Archetype Test and got The Spark ✨\n\n"Consistent? No. Unforgettable? Absolutely."\n\nWhat\'s yours? 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#e0b840" opacity=".35"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#d09020"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#d09020"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#d09020"/><rect x="10" y="82" width="26" height="40" rx="10" fill="#d09020"/><rect x="104" y="82" width="26" height="40" rx="10" fill="#d09020"/><path d="M10,88 L4,100 L14,98 L8,114 L20,102 L16,114 L26,98Z" fill="#f0c030" opacity=".9"/><path d="M130,88 L136,100 L126,98 L132,114 L120,102 L124,114 L114,98Z" fill="#f0c030" opacity=".9"/><circle cx="70" cy="48" r="36" fill="#f8e0a0"/><path d="M36,30 Q50,8 70,12 Q90,8 104,30 Q110,18 100,10 Q86,0 70,2 Q54,0 40,10 Q30,18 36,30Z" fill="#2e1e08"/><circle cx="50" cy="20" r="5" fill="#f0c030" opacity=".7"/><circle cx="70" cy="14" r="4" fill="#f0c030" opacity=".6"/><circle cx="90" cy="20" r="5" fill="#f0c030" opacity=".7"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#fce8b0"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#fce8b0"/><ellipse cx="56" cy="49" rx="3.5" ry="4" fill="#2e1e08"/><ellipse cx="84" cy="49" rx="3.5" ry="4" fill="#2e1e08"/><ellipse cx="57" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><ellipse cx="85" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><path d="M62,63 Q70,69 78,63" stroke="#a07010" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`},
+
+'THE STOIC':{bg:'#e8eef8',accent:'#2a3e68',axes:{A:'Guarded',B:'Anchored',C:'Spacious',D:'Feeling'},hook:'"I don\'t need to talk about it to process it."',core:'You feel things. Fully, deeply, sometimes overwhelmingly. You just do it privately. The emotional event happens — and you move it through yourself without needing an audience. This is not repression. It\'s your architecture.',strength:'Extraordinary emotional endurance. You can be in a real, sustained crisis and remain functional, clear-headed, capable of helping others. You are the calm in situations that require one.',blind:'The people who love you sometimes can\'t tell if they\'re reaching you. Not because you\'re closed — because you process so internally there\'s no visible evidence of impact.',rel:'You love through constancy and respect. Partners want to give back — they want to see the inside. Give them a window. Even a small one. It costs you less than you think.',quotes:['"I never know if what I said landed."','"Completely unshakeable. It\'s impressive until it makes you feel invisible."','"They came out of the worst year of their life somehow fine. I still don\'t know how."'],share:'"I\'m The Stoic. I felt it. I just didn\'t announce it."',ut:'When there\'s nowhere left for it to go',ud:'Your shadow type, how to let someone close without losing the self-sufficiency that keeps you whole, and why "I\'m fine" is not a full sentence.',caption:'I just took the Relationship Archetype Test and got The Stoic 🪨\n\n"I felt it. I just didn\'t announce it."\n\nFind yours 👇',
+figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#8898c0" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#405888"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#405888"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#405888"/><rect x="10" y="84" width="26" height="38" rx="10" fill="#2a3a60"/><rect x="104" y="84" width="26" height="38" rx="10" fill="#2a3a60"/><circle cx="70" cy="48" r="36" fill="#c0cce4"/><rect x="36" y="16" width="68" height="22" rx="4" fill="#1a2238"/><rect x="34" y="30" width="72" height="12" rx="0" fill="#1a2238"/><ellipse cx="56" cy="50" rx="5.5" ry="6.5" fill="#a8b8d8"/><ellipse cx="84" cy="50" rx="5.5" ry="6.5" fill="#a8b8d8"/><ellipse cx="55" cy="49" rx="4" ry="4.5" fill="#1a2238"/><ellipse cx="85" cy="49" rx="4" ry="4.5" fill="#1a2238"/><ellipse cx="56" cy="48" rx="1.5" ry="1.8" fill="#fff" opacity=".7"/><ellipse cx="86" cy="48" rx="1.5" ry="1.8" fill="#fff" opacity=".7"/><path d="M62,64 L78,64" stroke="#304870" stroke-width="2.5" stroke-linecap="round"/></svg>`},
+};
+
+
+const PAID_CONTENT = {
+
+  'THE FIXER': {
+    shadow: {
+      name: 'The Martyr',
+      trigger: 'When you\'ve been giving for too long with nothing coming back',
+      desc: 'The Fixer under pressure stops solving and starts suffering — loudly, quietly, or both. You become the person who keeps showing up but starts keeping score. The help doesn\'t stop, but the resentment starts building underneath it. You won\'t say you\'re exhausted. You\'ll just sigh a little more. Withdraw a little more. Wait to be noticed. The martyr doesn\'t ask for help — they wait to be rescued in the same way they\'ve rescued everyone else. The problem is nobody knows the rescue is needed, because you\'ve spent years convincing them you don\'t need one.',
+      signs: [
+        'You\'re still helping but you\'ve stopped meaning it',
+        'You\'ve started tracking who reached out to you vs. who didn\'t',
+        'You feel resentful but can\'t bring yourself to say why',
+        'You\'re waiting for someone to notice you\'re struggling — and getting angrier that they haven\'t'
+      ],
+      recovery: 'Say the thing. Not the polished version — the actual thing. "I\'m running on empty and I need someone to show up for me right now." It will feel catastrophic. It won\'t be.'
+    },
+    compat: {
+      best: ['THE ANCHOR', 'THE STOIC'],
+      best_why: 'The Anchor gives you a peer — someone as reliable as you, who won\'t collapse if you have a bad day. The Stoic gives you space to not perform, which is rarer than it sounds.',
+      hard: ['THE WILDFIRE', 'THE GHOST'],
+      hard_why: 'The Wildfire will consume everything you give and need more. The Ghost will disappear right when you\'ve invested the most — which hits The Fixer particularly hard.',
+      with_each: {
+        'THE ANCHOR': 'Two reliable people who both think they\'re responsible for everything. Decide who\'s holding what, or you\'ll both quietly burn out competing to care more.',
+        'THE MIRROR': 'They feel genuinely seen by you. You feel genuinely needed. Just make sure the relationship has a direction that isn\'t just you solving their problems forever.',
+        'THE GHOST': 'You\'ll keep reaching out. They\'ll keep disappearing. You\'ll take it personally. They won\'t understand why. Set a limit and mean it.',
+        'THE WILDFIRE': 'Incredibly intense while it lasts. Draining in a way that sneaks up on you. You\'ll give more than is sustainable and they\'ll expect the level you started at.',
+        'THE FORTRESS': 'They appreciate reliability, which you provide. The friction: you want to help and they won\'t tell you what they need. Ask directly. Wait for the answer.',
+        'THE OBSERVER': 'They understand you better than most, which can feel like intimacy. Don\'t mistake being understood for being cared for — ask them to show up, not just watch.',
+        'THE STRATEGIST': 'Functional, respectful pairing. Neither of you will cause unnecessary drama. Check in occasionally to make sure the relationship hasn\'t become a transaction.',
+        'THE CARETAKER': 'Two people trying to out-give each other. Beautiful in theory. In practice, make sure someone is actually receiving.',
+        'THE SPARK': 'They\'re exciting, you\'re stabilizing. It works until they want intensity and you\'re too depleted to match it. Pace yourself early.',
+        'THE STOIC': 'They won\'t ask for your help, which is unusual for you. Resist fixing what they haven\'t asked you to fix. The respect runs deep if you can do this.',
+        'THE ARCHITECT': 'You solve emotionally, they solve structurally. Together you cover a lot of ground. Make sure you\'re solving the same problems.',
+        'THE NPC': 'Steady and predictable, which your nervous system will enjoy. Don\'t mistake their stability for depth — keep asking questions.',
+      }
+    }
+  },
+
+  'THE FORTRESS': {
+    shadow: {
+      name: 'The Island',
+      trigger: 'When someone gets close enough to threaten the walls',
+      desc: 'The Fortress under pressure doesn\'t get hostile — it gets colder. More precise. More self-sufficient in a way that starts to feel like a message. The Island doesn\'t need anyone, demonstrably, and will construct elaborate evidence of this. You\'ll cancel plans, answer in shorter sentences, find reasons to be busy. Not to hurt anyone — to protect yourself from something that hasn\'t happened yet but feels inevitable. The Island can go weeks without meaningful connection and explain it as preference. Sometimes it is preference. Sometimes it\'s fear dressed up as independence.',
+      signs: [
+        'You\'ve been "busy" for three weeks and haven\'t noticed',
+        'Someone tried to get closer and you created distance you can\'t fully explain',
+        'You feel fine but your friends haven\'t heard from you in a month',
+        'You\'re proud of not needing anything from anyone, and that pride has started to feel a little defensive'
+      ],
+      recovery: 'Contact one person. Not to have a deep conversation — just to exist in proximity to them for a while. Isolation compounds. The first step back is always smaller than it feels.'
+    },
+    compat: {
+      best: ['THE ANCHOR', 'THE ARCHITECT'],
+      best_why: 'The Anchor gives you something you respect: reliability without pressure. The Architect communicates in your language — clear, structured, low-drama.',
+      hard: ['THE WILDFIRE', 'THE MIRROR'],
+      hard_why: 'The Wildfire will push for access you\'re not ready to give, then feel rejected. The Mirror will become whoever you seem to need, which means you\'ll never know who you\'re actually with.',
+      with_each: {
+        'THE FIXER': 'They\'ll try to solve things you haven\'t told them are problems. It\'s well-intentioned. Tell them what you actually need instead of waiting for them to guess.',
+        'THE MIRROR': 'They\'ll reflect you back so well you\'ll feel understood — then realize you don\'t know anything about them. Reciprocity matters here.',
+        'THE GHOST': 'Two people who can go long stretches without contact and feel okay. Check in anyway. Make sure the drift is mutual and not abandonment.',
+        'THE WILDFIRE': 'They want all of you. You give access in stages. This will be misread as rejection multiple times before they understand it\'s just how you work.',
+        'THE ANCHOR': 'A rare pairing where your independence is respected rather than pathologized. They won\'t crowd you. You won\'t take their stability for granted.',
+        'THE OBSERVER': 'They know more about you than you\'ve told them, which is either comforting or unsettling. Let them in a little more intentionally.',
+        'THE STRATEGIST': 'Efficient, respectful, low-maintenance. You won\'t irritate each other. Make sure you\'re also actually connecting and not just coexisting.',
+        'THE CARETAKER': 'They\'ll try to feed you and check on you. This is love. Try to receive it without deflecting every third time.',
+        'THE SPARK': 'Their emotional fluidity will sometimes feel exhausting, but it\'ll also pull things out of you. Let it.',
+        'THE STOIC': 'Two people who process internally. Make sure someone is occasionally saying something out loud.',
+        'THE ARCHITECT': 'Your equivalent in a different shell. Deeply functional. Might need occasional reminders that the relationship itself needs maintenance too.',
+        'THE NPC': 'Comfortable, undemanding. Just make sure comfortable isn\'t code for avoiding the harder conversations.'
+      }
+    }
+  },
+
+  'THE MIRROR': {
+    shadow: {
+      name: 'The Echo',
+      trigger: 'When you\'ve spent too long reflecting someone who wasn\'t good for you',
+      desc: 'The Mirror under pressure doesn\'t break — it starts reflecting the wrong things. The Echo is what happens when you\'ve absorbed so much of someone else that you can\'t find your own signal anymore. You might not even notice. You\'ll have opinions that sound like theirs. Reactions that follow their patterns. And then one day someone will ask you what you actually want and you\'ll open your mouth and not be sure the answer is yours. The Echo isn\'t manipulative — it\'s genuinely lost. The scary part is how comfortable lost can feel when you\'ve been doing it long enough.',
+      signs: [
+        'You\'re not sure which of your opinions are actually yours',
+        'You change how you feel about something based on who you\'re talking to',
+        'You\'ve been with someone for a while and your sense of self feels thinner than it was before',
+        'People keep asking what you want and you keep deflecting'
+      ],
+      recovery: 'Spend time alone doing something with no audience. Not performing self-care — actually being with yourself. Notice what you like when no one is watching. Start there.'
+    },
+    compat: {
+      best: ['THE ARCHITECT', 'THE STOIC'],
+      best_why: 'The Architect has a clear enough identity that you won\'t accidentally become them. The Stoic asks nothing of your emotional performance, which gives you room to be genuinely yourself.',
+      hard: ['THE WILDFIRE', 'THE CHAOS AGENT'],
+      hard_why: 'The Wildfire is so intense you\'ll absorb them entirely and lose yourself. You need someone with clear edges, not someone who\'s all energy and no boundaries.',
+      with_each: {
+        'THE FIXER': 'They\'ll feel deeply seen. You\'ll feel needed. Make sure the relationship occasionally goes the other direction.',
+        'THE GHOST': 'Their absence will confuse you — you\'ll fill the silence with assumptions. Ask directly instead of interpreting.',
+        'THE WILDFIRE': 'You\'ll become them. This will feel like intimacy. It isn\'t — it\'s absorption. Hold onto at least one opinion they don\'t share.',
+        'THE FORTRESS': 'They have clear enough walls that you\'ll bump into them and know where you are. Useful, actually.',
+        'THE ANCHOR': 'Stable and grounding. They\'ll help you find your footing without requiring you to perform.',
+        'THE OBSERVER': 'They see you more clearly than you see yourself. Let them tell you what they notice. It might be clarifying.',
+        'THE STRATEGIST': 'They have very clear preferences. You\'ll adapt to them quickly. Make sure you\'re adapting and not disappearing.',
+        'THE CARETAKER': 'Two people who give a lot. Make sure you\'re also receiving, not just giving and reflecting.',
+        'THE SPARK': 'Similar energy, different expression. You both flow. Just make sure the flow has a direction.',
+        'THE STOIC': 'They won\'t need you to perform emotionally, which is a relief. Use that space to figure out what you actually feel.',
+        'THE ARCHITECT': 'Clear, consistent, structured. You\'ll know exactly where you stand, which is stabilizing.',
+        'THE NPC': 'Steady enough that you won\'t lose yourself in them. Possibly the relationship where you most get to be yourself.'
+      }
+    }
+  },
+
+  'THE GHOST': {
+    shadow: {
+      name: 'The Void',
+      trigger: 'When the drifting becomes permanent and you\'ve stopped noticing',
+      desc: 'The Ghost under pressure doesn\'t just drift — it disappears so completely that even it loses track of itself. The Void is what happens when absence becomes the default setting and reentry starts to feel impossible. You\'ll tell yourself you\'ll reach out when you\'re better. When things calm down. When you have something worth saying. Weeks pass. Then months. And the longer you wait, the harder it gets, and the harder it gets, the longer you wait. The Void isn\'t choosing isolation — it\'s just stopped choosing at all. This one can sneak up quietly and feel like peace when it\'s actually just numbness.',
+      signs: [
+        'You can\'t remember the last time you initiated contact with someone you care about',
+        'You have 12+ unread messages from people you genuinely like and can\'t explain why you haven\'t replied',
+        'The thought of reconnecting with someone feels more overwhelming than it should',
+        'You\'re fine alone in a way that has started to feel a little too fine'
+      ],
+      recovery: 'Pick one person. Send them something small — a meme, a "thinking of you," a voice note. Don\'t explain the gap. Just reappear. The people who matter will be glad you did.'
+    },
+    compat: {
+      best: ['THE STOIC', 'THE OBSERVER'],
+      best_why: 'The Stoic won\'t need daily contact and won\'t take your disappearances personally. The Observer will understand you\'re still there even when you\'re quiet.',
+      hard: ['THE ANCHOR', 'THE CARETAKER'],
+      hard_why: 'The Anchor will feel abandoned and won\'t say so. The Caretaker will keep reaching out and feel increasingly hurt. Both deserve someone who can show up more consistently.',
+      with_each: {
+        'THE FIXER': 'They\'ll keep initiating. You\'ll keep appreciating it without matching it. Eventually they\'ll get tired. Try to close the gap before that happens.',
+        'THE MIRROR': 'They\'ll fill your absence with interpretation. Be more explicit about the fact that distance isn\'t indifference.',
+        'THE WILDFIRE': 'Explosive when you\'re present. Your disappearances will read as rejection even when they\'re not. This requires more communication than you\'ll naturally want to give.',
+        'THE FORTRESS': 'A workable match — they won\'t crowd you. Make sure the mutual distance is actually chosen and not accidental drifting.',
+        'THE ANCHOR': 'They\'ll carry the relationship. This will work until it doesn\'t. Try to show up before they run out.',
+        'THE OBSERVER': 'They understand your patterns better than you do. Let them. Their patience is real.',
+        'THE STRATEGIST': 'Efficient and low-pressure. But they do have expectations — they just don\'t announce them. Ask what they need.',
+        'THE CARETAKER': 'They\'ll keep the door open long past when they should. Don\'t mistake that for permission to keep disappearing.',
+        'THE SPARK': 'Intense when together, long silences between. This can work if you\'re both okay with the rhythm.',
+        'THE STOIC': 'Possibly your most compatible pairing. Neither of you needs daily contact. Just make sure you\'re choosing each other occasionally.',
+        'THE ARCHITECT': 'They value consistency, which is your weak point. Be honest about your rhythms upfront.',
+        'THE NPC': 'Comfortable and undemanding. The risk is you\'ll drift from each other and neither of you will notice.'
+      }
+    }
+  },
+
+  'THE ANCHOR': {
+    shadow: {
+      name: 'The Wall',
+      trigger: 'When you\'ve been holding things together for too long and someone finally asks how you are',
+      desc: 'The Anchor under pressure doesn\'t crumble — it calcifies. The Wall is what happens when self-sufficiency becomes a fortress you didn\'t mean to build. You\'ll still show up for everyone. You\'ll still handle things. But the warmth will drain out of it gradually, replaced by a kind of grim competence. You\'ll bristle when people try to help. You\'ll dismiss concern. You\'ll say you\'re fine so many times that you start to believe it even when you\'re not. The Wall isn\'t cold — it\'s just spent so long being strong that it\'s forgotten how to be anything else. And underneath: exhaustion so deep it\'s become invisible.',
+      signs: [
+        'You\'ve said "I\'m fine" so many times it\'s become automatic',
+        'Someone offered to help and you felt irritated instead of relieved',
+        'You\'re proud of not needing anything and that pride has a slightly defensive edge',
+        'You can\'t actually remember the last time you let someone take care of you'
+      ],
+      recovery: 'Let one person do one thing for you this week. Not because you need it — because you\'re practicing. The muscle atrophies if you don\'t use it.'
+    },
+    compat: {
+      best: ['THE CARETAKER', 'THE FIXER'],
+      best_why: 'The Caretaker will express love through acts of service — which is the language you understand. The Fixer is reliable in a way that lets you exhale.',
+      hard: ['THE GHOST', 'THE WILDFIRE'],
+      hard_why: 'The Ghost will make you carry the whole relationship without knowing they\'re doing it. The Wildfire will consume your stability without replenishing it.',
+      with_each: {
+        'THE FIXER': 'Two reliable people. Wonderful. Decide who holds what so you\'re not both quietly overextending.',
+        'THE MIRROR': 'They\'ll reflect your strength back to you, which feels validating. Make sure they\'re also seeing the parts that need rest.',
+        'THE GHOST': 'You\'ll be the one keeping things alive. This is familiar but unsustainable. They need to meet you somewhere.',
+        'THE WILDFIRE': 'You\'re the stable thing they orbit. This is fine until you\'re depleted. Set a limit.',
+        'THE FORTRESS': 'Mutual respect for independence. Make sure you\'re actually connecting and not just coexisting reliably.',
+        'THE OBSERVER': 'They see more than you\'ve shown them. This can be either comforting or exposing depending on the day.',
+        'THE STRATEGIST': 'Efficient, functional pairing. Check in occasionally to make sure the relationship has warmth, not just structure.',
+        'THE CARETAKER': 'This one is allowed to take care of you. Let them. It will be uncomfortable and necessary.',
+        'THE SPARK': 'They bring energy you don\'t always have. Good. Just make sure you\'re not becoming their emotional anchor on top of everything else.',
+        'THE STOIC': 'Two people who process internally and show up anyway. You\'ll understand each other without much explanation.',
+        'THE ARCHITECT': 'Structurally sound pairing. Both reliable, both consistent. Just make sure the reliability doesn\'t become the whole relationship.',
+        'THE NPC': 'Steady and undemanding. You\'ll feel at ease. Make sure the ease isn\'t masking distance.'
+      }
+    }
+  },
+
+  'THE OBSERVER': {
+    shadow: {
+      name: 'The Glass Wall',
+      trigger: 'When watching becomes the only safe way to participate',
+      desc: 'The Observer under pressure retreats behind the glass entirely. The Glass Wall doesn\'t disconnect — it watches more intensely than ever, cataloging, analyzing, understanding. But no longer participating. You\'ll know exactly what\'s happening in everyone\'s relationships. You\'ll have precise opinions about what people should do. You\'ll be the person everyone comes to for clarity. And you\'ll be completely alone in a room full of people who consider you a confidant. The Glass Wall mistakes understanding for connection. They\'re not the same thing. One is a skill. The other requires risk.',
+      signs: [
+        'You know a lot about what\'s going on in other people\'s lives and almost nothing is going on in yours',
+        'You\'ve given excellent relationship advice to three different people this month and haven\'t told anyone anything real about yourself',
+        'You feel like a witness to your own life rather than the person living it',
+        'The thought of being observed back — truly, not just politely — makes you uncomfortable'
+      ],
+      recovery: 'Tell someone something true about yourself that you don\'t usually say. Not the polished version. Not the safe version. Watch what happens.'
+    },
+    compat: {
+      best: ['THE SPARK', 'THE WILDFIRE'],
+      best_why: 'The Spark\'s emotional fluidity will pull you out of your head. The Wildfire will demand your presence in a way that\'s actually good for you — even if it\'s uncomfortable.',
+      hard: ['THE GHOST', 'THE STOIC'],
+      hard_why: 'The Ghost will give you nothing to observe — and two people disappearing from each other is just distance. The Stoic processes everything internally, so you\'ll be watching someone who gives you nothing back.',
+      with_each: {
+        'THE FIXER': 'They\'ll try to solve things. You\'ll already know the solution. Tell them, instead of watching them figure it out.',
+        'THE MIRROR': 'They\'ll feel seen by you. Make sure you\'re being seen too, not just being the one who sees.',
+        'THE GHOST': 'Two people who withdraw. Who reaches out first? Make sure someone does.',
+        'THE WILDFIRE': 'Their intensity is uncomfortable and useful. They won\'t let you stay behind the glass.',
+        'THE FORTRESS': 'Mutual appreciation for not being pressured. Make sure you\'re also occasionally showing yourselves to each other.',
+        'THE ANCHOR': 'They show up consistently and don\'t need you to perform. Good conditions for you to actually be present.',
+        'THE STRATEGIST': 'Two people who see ahead. You\'ll enjoy the conversation. Make sure it\'s also a relationship.',
+        'THE CARETAKER': 'They\'ll notice what you need before you say it. Actually tell them if they\'re right.',
+        'THE SPARK': 'They\'ll pull things out of you. The emotional range they bring gives you something to be present for.',
+        'THE STOIC': 'Two internal processors. You\'ll understand each other. You\'ll also both wait for the other person to go first.',
+        'THE ARCHITECT': 'Intellectually satisfying pairing. Check that there\'s also emotional contact.',
+        'THE NPC': 'Comfortable. Make sure comfortable isn\'t another way of saying distant.'
+      }
+    }
+  },
+
+  'THE WILDFIRE': {
+    shadow: {
+      name: 'The Burnout',
+      trigger: 'When you\'ve cycled through enough intensity that there\'s nothing left to ignite',
+      desc: 'The Wildfire under pressure doesn\'t simmer — it goes out. The Burnout is the version of you that arrived at a new connection, gave everything, and then found nothing left when the intensity faded. You might start something new just to feel the spark again. Or you might go completely cold and not understand why nothing feels real. The Burnout is exhausting in a specific way: you\'re depleted from your own feelings, and your feelings are so loud that this doesn\'t make sense to you. You\'ll mistake numbness for depth. You\'ll mistake starting over for growth. Both can be true sometimes. Know the difference.',
+      signs: [
+        'You\'ve started something new — a connection, a project, a thing — to feel something',
+        'The relationship you\'re in feels less alive than it did and you\'re not sure if that\'s normal or a problem',
+        'You\'re oscillating between too much and nothing',
+        'You\'re doing the thing you always do when things get complicated: leaving before you\'re left'
+      ],
+      recovery: 'Stay. Not because leaving is wrong — but because staying through the non-electric part is where you find out if the thing is real. Give it 30 more days before you decide.'
+    },
+    compat: {
+      best: ['THE ANCHOR', 'THE FORTRESS'],
+      best_why: 'The Anchor is steady enough to not be destabilized by your intensity — and solid enough to still be there when you come back. The Fortress won\'t chase you, which paradoxically makes you want to stay.',
+      hard: ['THE MIRROR', 'THE CARETAKER'],
+      hard_why: 'The Mirror will become you, which removes the friction you actually need. The Caretaker will deplete themselves trying to keep up with you.',
+      with_each: {
+        'THE FIXER': 'They\'ll try to manage your intensity. Tell them you don\'t need fixing — you need presence.',
+        'THE MIRROR': 'They\'ll match your energy completely. This feels like soulmate-level connection. It might be absorption.',
+        'THE GHOST': 'Your fire meets their absence. You\'ll feel rejected. They\'ll feel crowded. Communicate before you combust.',
+        'THE ANCHOR': 'The stability you need without the suffocation you fear. Stay long enough to find out.',
+        'THE FORTRESS': 'Their walls are not about you. Their slowness to open is not rejection. This requires patience you don\'t naturally have.',
+        'THE OBSERVER': 'They\'ll see you clearly. Let them tell you what they notice. It\'ll be uncomfortable and true.',
+        'THE STRATEGIST': 'They\'ll try to manage the relationship. This will feel like being handled. Tell them what you actually need.',
+        'THE CARETAKER': 'They\'ll give until they can\'t. Don\'t let them.',
+        'THE SPARK': 'Two intense people. Incredible or catastrophic. Possibly both in the same week.',
+        'THE STOIC': 'Their steadiness is grounding. Your intensity is activating. Genuinely good for each other if you can both adjust slightly.',
+        'THE ARCHITECT': 'They need consistency, you provide intensity. Find a rhythm, or this will frustrate both of you.',
+        'THE NPC': 'Their calm is either soothing or maddening. Might be both on different days.'
+      }
+    }
+  },
+
+  'THE ARCHITECT': {
+    shadow: {
+      name: 'The Blueprint',
+      trigger: 'When the structure becomes more important than what it was built for',
+      desc: 'The Architect under pressure doesn\'t panic — it over-engineers. The Blueprint is the version of you that responds to uncertainty by making the plan more precise, the expectations more explicit, the structure more airtight. You\'ll start managing relationships like projects. You\'ll create rules for things that didn\'t need rules. You\'ll confuse clarity with control. And the people in your life will start to feel less like partners and more like variables in your system. The Blueprint isn\'t cruel — it\'s just terrified of the thing that no amount of planning can prevent: being surprised by someone who matters.',
+      signs: [
+        'You\'ve been thinking about a relationship in terms of what it should look like rather than how it actually feels',
+        'Someone told you the relationship feels managed and you thought they were being unfair',
+        'You have strong opinions about how things should be done and low tolerance for other approaches',
+        'You haven\'t done something unplanned in a while'
+      ],
+      recovery: 'Do one thing this week with no plan and no outcome. A conversation with no agenda. A day with no structure. Let it be uncomfortable. That\'s the point.'
+    },
+    compat: {
+      best: ['THE STOIC', 'THE ANCHOR'],
+      best_why: 'The Stoic communicates in clear, low-drama terms that you find legible. The Anchor is reliable enough that you don\'t need to manage the relationship — you can just be in it.',
+      hard: ['THE WILDFIRE', 'THE SPARK'],
+      hard_why: 'The Wildfire moves too fast and too emotionally for your system. The Spark\'s fluidity will feel like inconsistency to you.',
+      with_each: {
+        'THE FIXER': 'Two people who solve things. You solve structurally, they solve emotionally. Cover more ground together. Make sure you\'re solving the same problems.',
+        'THE MIRROR': 'They\'ll adapt to your structure, which can feel ideal. Make sure you\'re also asking what they actually need.',
+        'THE GHOST': 'Their inconsistency will frustrate your need for reliability. Be explicit about what you need early.',
+        'THE WILDFIRE': 'Their pace will feel chaotic. Your structure will feel suffocating. Requires significant adjustment from both sides.',
+        'THE FORTRESS': 'Mutual respect, shared language, low drama. Check occasionally that you\'re also connecting emotionally.',
+        'THE OBSERVER': 'Intellectually well-matched. Make sure the relationship has warmth and not just insight.',
+        'THE STRATEGIST': 'Two planners. Potentially very efficient together. Also potentially competitive about who\'s right.',
+        'THE CARETAKER': 'They\'ll express love through acts you might not notice. Tell them specifically what feels like care to you.',
+        'THE SPARK': 'Their emotional fluidity will feel inconsistent. They\'ll experience your structure as rigidity. Somewhere in the middle is a workable thing.',
+        'THE STOIC': 'Your best match temperamentally. Low drama, clear communication, mutual respect for process.',
+        'THE ANCHOR': 'Reliable meets reliable. Good foundation. Just make sure the foundation isn\'t the whole building.',
+        'THE NPC': 'Steady and undemanding. You\'ll appreciate this more than you might expect.'
+      }
+    }
+  },
+
+  'THE CARETAKER': {
+    shadow: {
+      name: 'The Martyr\'s Twin',
+      trigger: 'When giving becomes a way to avoid receiving',
+      desc: 'The Caretaker under pressure doesn\'t stop caring — it starts using care as armor. The Martyr\'s Twin is the version of you that stays so busy taking care of others that no one ever has to notice you\'re not taking care of yourself. You\'ll make the meal, arrange the plans, check on everyone, remember everyone\'s thing — and quietly, beneath all of it, be running on empty in a way you won\'t name. Because naming it would require asking for something. And asking for something would mean being the one who needs, not the one who provides. The Martyr\'s Twin is generous and exhausted and quietly invisible, and has usually been that way for so long they\'ve mistaken it for personality.',
+      signs: [
+        'You\'re tired in a way that doesn\'t go away after sleep',
+        'When someone asks what you need, you immediately redirect to what they need',
+        'You\'ve been feeling vaguely resentful but can\'t explain why because everyone is being perfectly nice',
+        'The idea of someone taking care of you makes you uncomfortable rather than relieved'
+      ],
+      recovery: 'When someone asks what you need this week: answer. Not "I\'m fine," not a redirect. An actual answer. Even if it\'s small. Even if it\'s just "I want someone to make the decision tonight."'
+    },
+    compat: {
+      best: ['THE ANCHOR', 'THE STOIC'],
+      best_why: 'The Anchor is reliable enough that you can actually exhale around them. The Stoic won\'t demand emotional performance, which gives you permission to just be.',
+      hard: ['THE WILDFIRE', 'THE CHAOS AGENT'],
+      hard_why: 'The Wildfire will accept everything you give and need more. You\'ll keep giving past your limit. This is where Caretakers disappear.',
+      with_each: {
+        'THE FIXER': 'Two givers. Beautiful and potentially depleting. Make sure someone is receiving.',
+        'THE MIRROR': 'They\'ll become what you need them to be. Make sure you also know who they actually are.',
+        'THE GHOST': 'You\'ll keep the door open long past when you should. They need to meet you somewhere.',
+        'THE WILDFIRE': 'You\'ll give everything. They\'ll need everything. Set limits early and mean them.',
+        'THE FORTRESS': 'They won\'t tell you what they need and you won\'t stop trying to figure it out. Ask directly. Accept the answer.',
+        'THE OBSERVER': 'They\'ll notice what you need before you say it. Let them be right. Say thank you and mean it.',
+        'THE STRATEGIST': 'They express care efficiently rather than warmly. Learn their language. It counts.',
+        'THE ANCHOR': 'They\'ll show up for you consistently. This is the rare person you can actually lean on.',
+        'THE SPARK': 'Their energy is exciting and their needs are real. Make sure you\'re also naming yours.',
+        'THE STOIC': 'They process internally and show up consistently. The reliability is real. You\'ll be able to exhale.',
+        'THE ARCHITECT': 'They\'ll appreciate your care more than they\'ll say. Ask for explicit appreciation — they can give it.',
+        'THE NPC': 'Steady and undemanding. You\'ll accidentally do everything. Make sure the balance is actually a choice.'
+      }
+    }
+  },
+
+  'THE STRATEGIST': {
+    shadow: {
+      name: 'The Handler',
+      trigger: 'When the strategy stops being about connection and becomes about control',
+      desc: 'The Strategist under pressure doesn\'t lose the thread — it tightens its grip. The Handler is the version of you that responds to vulnerability in relationships by managing them more precisely. You\'ll start anticipating problems so aggressively that you create them. You\'ll know what people need before they say it, and start giving it to them before they ask, and this will look like care and feel like surveillance. You\'ll have contingency plans for conversations that haven\'t happened. You\'ll optimize the relationship until the humanity is gone from it. The Handler is very effective and completely alone in a room full of people it has successfully managed.',
+      signs: [
+        'You\'ve started thinking about a close relationship in terms of strategy rather than feeling',
+        'Someone you care about said you made them feel managed and you dismissed it',
+        'You\'re anticipating problems that haven\'t materialized and solving for them anyway',
+        'You haven\'t been genuinely surprised by anything in a relationship recently — and you\'re not sure if that\'s good'
+      ],
+      recovery: 'Have one conversation this week with no strategy. No planned outcome, no exit route, no read of the room beforehand. Just say the thing and see what happens. It will be uncomfortable. That\'s contact.'
+    },
+    compat: {
+      best: ['THE OBSERVER', 'THE ARCHITECT'],
+      best_why: 'The Observer sees your patterns and won\'t be destabilized by them. The Architect communicates in a language you respect — clear, intentional, structured.',
+      hard: ['THE MIRROR', 'THE WILDFIRE'],
+      hard_why: 'The Mirror will adapt to your strategy, which removes the friction you need. The Wildfire will refuse to be managed, which you\'ll experience as chaos.',
+      with_each: {
+        'THE FIXER': 'Two competent people. Potentially very effective together. Make sure the relationship is also warm.',
+        'THE MIRROR': 'They\'ll become whatever you need. This feels like understanding. It\'s adaptation. Ask who they actually are.',
+        'THE GHOST': 'Their inconsistency will feel like a problem to solve. It\'s not. It\'s their rhythm. Adjust.',
+        'THE WILDFIRE': 'They can\'t be managed and won\'t appreciate the attempt. This is useful information. Let go of the plan.',
+        'THE FORTRESS': 'Two people who give access slowly and carefully. The mutual respect runs deep. Move at the pace the relationship actually needs.',
+        'THE OBSERVER': 'They see you. All of it. This is either relieving or alarming. Try relieving.',
+        'THE ANCHOR': 'Reliable and stable. You can actually exhale here. The relationship doesn\'t require managing.',
+        'THE CARETAKER': 'They\'ll give a lot. Make sure you\'re also receiving and not just analyzing whether their giving is optimal.',
+        'THE SPARK': 'Their emotional fluidity will feel unpredictable. Good. Let it be.',
+        'THE STOIC': 'Clear, low-drama, internally consistent. You\'ll trust them quickly. This is the relationship where strategy can actually rest.',
+        'THE ARCHITECT': 'Two planners. Efficient and potentially controlling. Designate a domain each and stay in your lane.',
+        'THE NPC': 'Comfortable and consistent. Make sure you\'re also actually connecting.'
+      }
+    }
+  },
+
+  'THE SPARK': {
+    shadow: {
+      name: 'The Restless',
+      trigger: 'When intensity becomes the thing you\'re chasing instead of the person',
+      desc: 'The Spark under pressure doesn\'t go out — it keeps looking for somewhere new to burn. The Restless is the version of you that has confused the feeling of falling with the feeling of love, and keeps finding new things to fall into when the old ones settle. You\'ll tell yourself the intensity faded because it wasn\'t right. Sometimes that\'s true. Sometimes you left before you found out. The Restless moves fast, feels everything, and struggles to distinguish between a relationship that ended and a relationship that deepened. Deep and settled can feel the same as over if you haven\'t learned the difference.',
+      signs: [
+        'You\'ve ended things when the initial intensity faded, more than once',
+        'You\'re in something good and you keep waiting to feel something wrong',
+        'New connections feel more alive than existing ones, consistently',
+        'The word "settled" makes you faintly anxious'
+      ],
+      recovery: 'Stay in the thing that\'s good. Not forever — just 30 more days. Notice what you find when the fire isn\'t the main event. It might be better. It\'s definitely different.'
+    },
+    compat: {
+      best: ['THE WILDFIRE', 'THE MIRROR'],
+      best_why: 'The Wildfire matches your intensity without needing you to stabilize. The Mirror gives you a space where your emotional range is fully received.',
+      hard: ['THE ARCHITECT', 'THE STOIC'],
+      hard_why: 'The Architect needs consistency you don\'t naturally provide. The Stoic processes internally, which will feel like absence to you.',
+      with_each: {
+        'THE FIXER': 'They\'ll stabilize you. This is useful. Make sure you\'re also stabilizing yourself.',
+        'THE MIRROR': 'They\'ll feel exactly like the right person. Make sure they also have their own shape.',
+        'THE GHOST': 'Intense when together, long silences between. You\'ll interpret the silence as distance. Ask before you decide.',
+        'THE WILDFIRE': 'Two intense people. This is either wonderful or destructive. Probably both, at different points.',
+        'THE FORTRESS': 'Their slowness to open can feel like rejection. It isn\'t. Wait.',
+        'THE OBSERVER': 'They see more than you\'ve shown them. This is clarifying if you let it be.',
+        'THE STRATEGIST': 'They\'ll try to manage the flow of the relationship. Tell them the flow is kind of the point.',
+        'THE CARETAKER': 'They\'ll notice your needs before you name them. Name them anyway.',
+        'THE ANCHOR': 'Steadier than you. This is a feature, not a bug. You need this more than you know.',
+        'THE STOIC': 'Their internal processing will feel like absence. Ask what\'s actually happening before you interpret.',
+        'THE ARCHITECT': 'They need predictability. You provide intensity. Somewhere in the middle is a workable thing. Both of you have to move.',
+        'THE NPC': 'Calm where you\'re loud. This might be restful. Give it longer than feels natural.'
+      }
+    }
+  },
+
+  'THE STOIC': {
+    shadow: {
+      name: 'The Iceberg',
+      trigger: 'When internal processing becomes permanent isolation',
+      desc: 'The Stoic under pressure doesn\'t crack — it goes deeper. The Iceberg is the version of you where 90% is below the surface and the 10% above has become so still that people stop believing there\'s anything underneath. You\'ll process everything internally and emerge on the other side of a crisis apparently fine, and the people who love you will feel irrelevant to your survival, which — they\'re not wrong — they kind of were. The Iceberg is self-sufficient in a way that reads, to the people who care about it, as "I don\'t need you." Over time, they believe it. Over time, they stop trying. The Iceberg mistakes endurance for intimacy.',
+      signs: [
+        'The people closest to you have stopped asking how you\'re doing because you always say fine',
+        'You\'ve been through something significant recently and nobody knew until it was over',
+        'You\'re fine. But the "fine" has a quality to it lately.',
+        'Someone who cares about you said they feel like they can\'t reach you and you didn\'t know what they meant'
+      ],
+      recovery: 'Tell one person something true before you\'ve fully processed it. Not a finished thought — a live one. "I don\'t know how I feel about this yet" is a complete sentence. Start there.'
+    },
+    compat: {
+      best: ['THE ARCHITECT', 'THE ANCHOR'],
+      best_why: 'The Architect communicates your way — clear, direct, low-drama. The Anchor won\'t need daily emotional processing from you but will show up when it matters.',
+      hard: ['THE SPARK', 'THE WILDFIRE'],
+      hard_why: 'The Spark needs visible emotional reciprocity you don\'t naturally provide. The Wildfire moves too fast for your processing speed.',
+      with_each: {
+        'THE FIXER': 'They\'ll try to fix what you haven\'t named as a problem. Tell them when something is actually hard. They can help.',
+        'THE MIRROR': 'They\'ll adapt to your stillness. This can feel like compatibility. Make sure it\'s also connection.',
+        'THE GHOST': 'Two people who can go long stretches without contact. Just make sure you\'re choosing each other occasionally.',
+        'THE WILDFIRE': 'Their intensity will activate things in you. This is uncomfortable and probably good.',
+        'THE FORTRESS': 'Two internal processors. Deep mutual respect. Both of you will wait for the other to go first. Someone has to.',
+        'THE OBSERVER': 'They see more than you\'ve shown them and won\'t push. The patience is real. Show them something eventually.',
+        'THE STRATEGIST': 'Clear communication, low drama, mutual respect. The relationship that actually feels safe.',
+        'THE CARETAKER': 'They\'ll notice you need something before you name it. Let them be right. It\'s okay.',
+        'THE SPARK': 'Their need for visible emotion will feel like a demand. It\'s not. It\'s longing. Give them something to hold onto.',
+        'THE ANCHOR': 'Two people who show up quietly and consistently. You\'ll understand each other without a lot of words.',
+        'THE ARCHITECT': 'Your best temperamental match. Low drama, structured communication, shared respect for process.',
+        'THE NPC': 'Comfortable and undemanding. Make sure comfortable isn\'t another word for disconnected.'
+      }
+    }
+  }
+
+};
+
+const EASTER_EGGS = {
+  'THE NPC': {
+    bg:'#f0ece4', accent:'#6840a8', trigger:'all-last',
+    axes:{A:'Guarded',B:'Anchored',C:'Spacious',D:'Logic'},
+    hook:'"You have the emotional range of a background character. Somehow, people find this deeply comforting."',
+    core:"You answered every single question with the most measured, least dramatic, most self-contained response available. Either you are the most emotionally regulated person on this platform, or you clicked through on autopilot. Either way, the result is the same: you are The NPC. You don't cause drama. You don't need things. You simply exist, reliably, in the background of everyone else's main character arc.",
+    strength:"Unshakeable consistency. You don't spiral. You don't escalate. In a world of people performing their feelings, your steadiness is actually rare.",
+    blind:"Somewhere between 'grounded' and 'unreadable' there is a line, and the people who care about you aren't sure which side of it you're on.",
+    rel:"People don't always notice you. But they notice when you're gone. That's not nothing — that's actually a specific kind of power most people never develop.",
+    quotes:['"Wait, you\'re upset? I genuinely could not tell."','"They\'re always fine. Suspiciously fine."','"The most reliable person I know. Also possibly a robot."'],
+    share:'"I just unlocked a secret result on this personality test by answering everything reasonably and apparently that makes me an NPC. accurate tbh."',
+    caption:"I just unlocked a secret result on this personality test \n\nApparently answering every question with the most reasonable option makes you The NPC.\n\n'You don\'t cause drama. You simply exist.'\n\nFind yours \uD83D\uDC47",
+    ut:"The NPC's hidden boss mode",
+    ud:"What happens when the most unreadable person in the room finally lets someone in — and why that moment hits differently than anyone expects.",
+    rarity:'Unlocked by less than 2% of players',
+    figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#c8b8e0" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#6840a8"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#6840a8"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#6840a8"/><rect x="10" y="84" width="26" height="38" rx="10" fill="#6840a8"/><rect x="104" y="84" width="26" height="38" rx="10" fill="#6840a8"/><circle cx="70" cy="48" r="36" fill="#d8c8f0"/><rect x="38" y="18" width="64" height="22" rx="4" fill="#2c1858"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#c0a8e8"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#c0a8e8"/><ellipse cx="55" cy="49" rx="4" ry="4.5" fill="#2c1858"/><ellipse cx="85" cy="49" rx="4" ry="4.5" fill="#2c1858"/><ellipse cx="56" cy="48" rx="1.5" ry="1.8" fill="#fff" opacity=".8"/><ellipse cx="86" cy="48" rx="1.5" ry="1.8" fill="#fff" opacity=".8"/><path d="M62,64 L78,64" stroke="#4820a0" stroke-width="2.5" stroke-linecap="round"/><text x="96" y="38" font-size="11" fill="#6840a8" opacity=".5" font-family="sans-serif">NPC</text><rect x="94" y="42" width="24" height="4" rx="2" fill="#6840a8" opacity=".3"/><rect x="94" y="48" width="18" height="4" rx="2" fill="#6840a8" opacity=".2"/></svg>`
+  },
+  'THE CHAOS AGENT': {
+    bg:'#faeae0', accent:'#c03318', trigger:'all-first',
+    axes:{A:'Giving',B:'Adaptive',C:'Pulling',D:'Feeling'},
+    hook:'"You didn\'t come to play. You came to watch everything burn and call it growth."',
+    core:"You answered every single question with maximum giving, maximum absorption, maximum pursuit, maximum feeling. All the way up, every time. On paper, you are the most emotionally generous, open, and present person imaginable. In practice, you are completely exhausting — in the way that wildfires are exhausting. Technically destructive. Undeniably alive.",
+    strength:"People orbit you. Your capacity to feel, give, and pursue is genuinely off the charts. Nobody who has spent real time with you forgets it.",
+    blind:"You burn bright and you burn fast. The people who love you most are probably also a little bit afraid of you — not because you're dangerous, but because they know you'll eventually need more than they have.",
+    rel:"You love at full volume. The relationship that actually works for you is with someone who doesn't need you to turn it down — someone who can keep up.",
+    quotes:['"Being around them is like standing next to a speaker at a concert."','"They care SO much. About everything. It\'s a lot."','"I have never felt more alive and more tired simultaneously."'],
+    share:'"Apparently if you answer every question on this personality test with maximum chaos you unlock a secret result. I am The Chaos Agent and I am not well."',
+    caption:"I unlocked a secret result on this personality test by answering every question with full chaos energy \uD83D\uDD25\n\nYou didn't come to play. You came to watch everything burn and call it growth.\n\nFind yours \uD83D\uDC47",
+    ut:"What The Chaos Agent looks like when they finally run out of fuel",
+    ud:"Your shadow type — what happens when you've given everything to everyone and there's nothing left for you. Plus: the one person who can actually keep up.",
+    rarity:'Unlocked by less than 1% of players',
+    figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#e09880" opacity=".4"/><path d="M52,182 Q48,155 50,140 Q55,138 58,148 Q62,136 65,140 L65,182Z" fill="#d84020"/><path d="M75,182 L75,140 Q78,136 82,148 Q85,138 90,140 Q92,155 88,182Z" fill="#d84020"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#d84020"/><rect x="10" y="82" width="26" height="40" rx="10" fill="#d84020"/><rect x="104" y="82" width="26" height="40" rx="10" fill="#d84020"/><path d="M10,84 Q4,92 6,100 Q4,108 10,116" stroke="#f06040" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M130,84 Q136,92 134,100 Q136,108 130,116" stroke="#f06040" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="70" cy="48" r="36" fill="#f0b890"/><path d="M36,32 Q50,10 70,16 Q90,10 104,32 Q108,20 100,14 Q86,2 70,4 Q54,2 40,14 Q32,20 36,32Z" fill="#2a0e08"/><path d="M55,20 Q50,10 58,6" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/><path d="M70,16 Q68,4 74,2" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/><path d="M85,20 Q92,8 88,4" stroke="#f08030" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/><ellipse cx="56" cy="50" rx="5" ry="6" fill="#f8c8a0"/><ellipse cx="84" cy="50" rx="5" ry="6" fill="#f8c8a0"/><ellipse cx="56" cy="49" rx="3.5" ry="4" fill="#2a0e08"/><ellipse cx="84" cy="49" rx="3.5" ry="4" fill="#2a0e08"/><ellipse cx="57" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><ellipse cx="85" cy="48" rx="1.2" ry="1.5" fill="#fff" opacity=".8"/><path d="M61,63 Q70,69 79,63" stroke="#b02010" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`
+  },
+  'THE MIRROR TEST': {
+    bg:'#e8f0f8', accent:'#2a5888', trigger:'all-mid',
+    axes:{A:'Mid',B:'Mid',C:'Mid',D:'Mid'},
+    hook:'"You picked the middle option every single time. We genuinely can\'t tell if you\'re extremely balanced or just avoiding the question."',
+    core:"Every axis, dead center. Every answer, option 2. You are either the most diplomatically self-aware person to ever take this test, or you have a profound commitment to not revealing yourself — even to an anonymous quiz on the internet. There's something quietly fascinating about someone who, given the chance to tell the truth in a room where no one is watching, still hedges.",
+    strength:"You are genuinely hard to read. In a world where everyone is performing their personality loudly, that is increasingly rare. Neutrality, wielded intentionally, is a kind of superpower.",
+    blind:"At some point 'balanced' tips into 'unknown.' The people closest to you sometimes wonder if they actually know you — or just know the version of you that you decided to show.",
+    rel:"We respect it. We're also a little suspicious of it. The person who unlocks you is someone who makes you feel safe enough to stop being diplomatic.",
+    quotes:['"I have no idea what they\'re actually thinking. Zero."','"They never overreact. They also never... react."','"I trust them completely. I\'m just not sure who they actually are."'],
+    share:'"This personality test has a secret result if you pick the middle option for every question and I accidentally triggered it. my therapist would have thoughts."',
+    caption:"Apparently this personality test has a hidden result if you pick the middle option for every single question \uD83D\uDC40\n\nI present: The Mirror Test.\n\n'We can't tell if you're extremely balanced or just avoiding the question.'\n\nFind yours \uD83D\uDC47",
+    ut:"What The Mirror Test actually wants",
+    ud:"Your real archetype underneath the diplomacy — what you'd be if you answered honestly, and why the hedge is protecting something specific.",
+    rarity:'Unlocked by less than 3% of players',
+    figure:`<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="197" rx="38" ry="6" fill="#90b4d8" opacity=".4"/><rect x="42" y="138" width="24" height="52" rx="10" fill="#3a6898"/><rect x="74" y="138" width="24" height="52" rx="10" fill="#3a6898"/><rect x="30" y="80" width="80" height="68" rx="22" fill="#3a6898"/><rect x="10" y="85" width="26" height="36" rx="10" fill="#3a6898"/><rect x="104" y="85" width="26" height="36" rx="10" fill="#3a6898"/><rect x="100" y="82" width="26" height="34" rx="6" fill="#d8c8f0" stroke="#a080d8" stroke-width="1.5"/><ellipse cx="113" cy="99" rx="9" ry="11" fill="#e8eef8" opacity=".8"/><ellipse cx="113" cy="94" rx="5" ry="6" fill="#3a6898" opacity=".3"/><circle cx="70" cy="48" r="36" fill="#c0d4ec"/><ellipse cx="70" cy="25" rx="30" ry="16" fill="#1a2e48"/><ellipse cx="56" cy="48" rx="5" ry="6" fill="#a8c4e0"/><ellipse cx="84" cy="48" rx="5" ry="6" fill="#a8c4e0"/><ellipse cx="55" cy="47" rx="4" ry="4.5" fill="#1a2e48"/><ellipse cx="85" cy="47" rx="4" ry="4.5" fill="#1a2e48"/><ellipse cx="56" cy="46" rx="1.5" ry="1.8" fill="#fff" opacity=".75"/><ellipse cx="86" cy="46" rx="1.5" ry="1.8" fill="#fff" opacity=".75"/><path d="M63,63 Q70,66 77,63" stroke="#507aaa" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="70" cy="70" rx="3" ry="1.5" fill="#507aaa" opacity=".4"/></svg>`
+  }
+};
+
+const COMPAT={
+  'THE FIXER+THE MIRROR':{sub:'You fix for them; they become you.',body:'The Fixer brings solutions and steadiness. The Mirror absorbs and amplifies. Together you create a dynamic that feels deeply supportive — until The Fixer needs fixing, and The Mirror isn\'t sure whose feelings they\'re actually having.',tension:'Neither of you asks for much back.'},
+  'THE FORTRESS+THE WILDFIRE':{sub:'Irresistible force meets immovable object.',body:'The Wildfire is drawn to The Fortress\'s mystery. The Fortress is quietly stirred by the intensity. Most electric beginnings. Most exhausting middles.',tension:'One reads distance as rejection. The other reads pursuit as pressure.'},
+  'THE ANCHOR+THE GHOST':{sub:'One holds on. One drifts.',body:'The Anchor shows up consistently. The Ghost disappears periodically. This pairing often lasts longer than it should — The Anchor doesn\'t chase, The Ghost doesn\'t feel smothered.',tension:'Anchor needs to feel needed. Ghost needs to feel free.'},
+};
+
+/* ══════════════════════════════════════
+   STATE & ROUTING
+══════════════════════════════════════ */
+let sc={A:0,B:0,C:0,D:0},cur=0,myType=null,friendType=null,fromCompat=false,isEasterEgg=false;
+const BASE=window.location.origin+window.location.pathname;
+
+function init(){
+  const p=new URLSearchParams(window.location.search);
+
+  // Returning from Stripe — ?payment=success in URL
+  if(new URLSearchParams(window.location.search).get('payment')==='success'){
+    const savedType = localStorage.getItem('rat_archetype');
+    const savedEgg  = localStorage.getItem('rat_is_egg');
+    const validType = savedType && (A[savedType] || EASTER_EGGS[savedType]);
+    if(validType){
+      myType = savedType;
+      isEasterEgg = savedEgg === 'true';
+      // Mark as paid so unlock button stays hidden
+      try{ localStorage.setItem('rat_paid_'+myType, '1'); }catch(e){}
+      trackPaymentSuccess();
+      // Show result page first, then slide in paid content
+      showResult();
+      setTimeout(()=>{
+        showPaidContent(myType);
+        // Clean URL without reloading
+        window.history.replaceState({}, '', window.location.pathname);
+      }, 600);
+    }
+  }
+
+  const fp=p.get('from');
+  if(fp&&A[decodeURIComponent(fp)]){
+    friendType=decodeURIComponent(fp);fromCompat=true;
+    document.getElementById('friend-name-display').textContent='The '+friendType.split(' ')[1];
+    show('compat-landing');
+  } else show('landing');
+}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+
+/* ══════════════════════════════════════
+   TEST FLOW
+══════════════════════════════════════ */
+let answerHistory=[];
+function startTest(){
+  sc={A:0,B:0,C:0,D:0};cur=0;answerHistory=[];isEasterEgg=false;
+  track('test_started', {source: friendType ? 'compat_link' : 'direct'});
+  show('qscreen');renderQ();
+}
+function renderQ(){
+  const q=QUESTIONS[cur];
+  document.getElementById('prog').style.width=Math.round((cur/28)*100)+'%';
+  document.getElementById('prog-n').textContent=`${cur+1} of 28`;
+  const backBtn=document.getElementById('back-btn');
+  if(backBtn) backBtn.disabled=cur===0;
+  ['qtag','qtext','qopts'].forEach(id=>{const e=document.getElementById(id);e.style.animation='none';void e.offsetWidth;e.style.animation=''});
+  document.getElementById('qtag').textContent=q.tag;
+  document.getElementById('qtext').textContent=q.q;
+  const el=document.getElementById('qopts');el.innerHTML='';
+  q.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='qopt';b.textContent=o.t;b.onclick=()=>pick(i,o.s,q.ax);el.appendChild(b)});
+}
+function pick(i,s,ax){
+  document.querySelectorAll('.qopt').forEach((b,j)=>b.classList.toggle('sel',i===j));
+  setTimeout(()=>{
+    answerHistory.push({ax,s,cur});
+    track('question_answered', {question_number: cur+1, axis: ax, option_index: i+1});
+    sc[ax]+=s;cur++;
+    cur>=28?finish():renderQ();
+  },280);
+}
+function skipQ(){
+  const ax=QUESTIONS[cur].ax;
+  answerHistory.push({ax,s:2,cur,skipped:true});
+  track('question_skipped', {question_number: cur+1, axis: ax});
+  sc[ax]+=2;cur++;
+  cur>=28?finish():renderQ();
+}
+
+/* ══════════════════════════════════════
+   SCORING
+══════════════════════════════════════ */
+function goBack(){
+  if(cur===0||answerHistory.length===0) return;
+  track('back_button_used', {from_question: cur+1});
+  const last=answerHistory.pop();
+  sc[last.ax]-=last.s;
+  cur=last.cur;
+  renderQ();
+}
+function checkEasterEgg(){
+  // All 28 answers must follow the same pattern — check answerHistory
+  if(answerHistory.length!==28) return null;
+  const allFirst=answerHistory.every(a=>a.s===3&&!a.skipped);
+  const allMid=answerHistory.every(a=>a.s===2&&!a.skipped);
+  const allLast=answerHistory.every(a=>a.s===1&&!a.skipped);
+  if(allLast) return 'THE NPC';
+  if(allFirst) return 'THE CHAOS AGENT';
+  if(allMid) return 'THE MIRROR TEST';
+  return null;
+}
+
+function finish(){
+  // Check easter eggs first
+  const egg=checkEasterEgg();
+  if(egg){
+    myType=egg; isEasterEgg=true;
+    track('easter_egg_unlocked', {egg_type: egg});
+    track('test_completed', {archetype: egg, is_easter_egg: true, from_compat: !!friendType});
+    fromCompat?showCompatResult():showResult(); return;
+  }
+  isEasterEgg=false;
+  const pA=(sc.A-7)/14,pB=(sc.B-7)/14,pC=(sc.C-7)/14,pD=(sc.D-7)/14;
+  const gH=pA>=.5,aH=pB>=.5,cH=pC>=.5,fH=pD>=.5;
+  if(gH&&!aH&&cH&&!fH) myType='THE FIXER';
+  else if(!gH&&!aH&&!cH&&pD<.4) myType='THE FORTRESS';
+  else if(gH&&aH&&cH&&fH) myType='THE MIRROR';
+  else if(!gH&&aH&&!cH&&fH) myType='THE GHOST';
+  else if(gH&&!aH&&cH&&fH) myType='THE ANCHOR';
+  else if(!gH&&aH&&cH&&fH) myType='THE OBSERVER';
+  else if(gH&&aH&&!cH&&fH) myType='THE WILDFIRE';
+  else if(!gH&&!aH&&!cH&&pD>=.4) myType='THE STOIC';
+  else if(gH&&!aH&&!cH&&fH) myType='THE CARETAKER';
+  else if(!gH&&aH&&cH&&!fH) myType='THE STRATEGIST';
+  else if(gH&&aH&&cH&&!fH) myType='THE SPARK';
+  else myType='THE ARCHITECT';
+  track('test_completed', {archetype: myType, is_easter_egg: false, from_compat: !!friendType});
+  fromCompat?showCompatResult():showResult();
+}
+
+/* ══════════════════════════════════════
+   RENDER CARD
+══════════════════════════════════════ */
+function renderCard(type,cardId,decoId,figureId,footId){
+  const d=isEasterEgg&&EASTER_EGGS[type]?EASTER_EGGS[type]:A[type];
+  const nameWord=type.split(' ')[1];
+  document.getElementById(cardId).style.background=d.bg;
+  document.getElementById(decoId).innerHTML=`<svg width="100%" height="100%" viewBox="0 0 380 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0"><circle cx="300" cy="30" r="130" fill="${d.accent}" opacity=".06"/><circle cx="330" cy="190" r="90" fill="${d.accent}" opacity=".04"/><circle cx="50" cy="230" r="110" fill="${d.accent}" opacity=".05"/></svg>`;
+  const fig=document.getElementById(figureId);
+  fig.innerHTML=d.figure;
+  fig.style.background=`linear-gradient(to bottom, ${d.bg}00 0%, ${d.bg} 90%)`;
+  const axPills=Object.values(d.axes).map(v=>`<span class="bcard-axis" style="background:${d.accent}18;color:${d.accent}">${v}</span>`).join('');
+  const foot=document.getElementById(footId);
+  foot.style.background=d.bg;
+  foot.innerHTML=`<span class="bcard-the" style="color:${d.accent};opacity:.6">The</span><span class="bcard-name" style="color:${d.accent}">${nameWord}</span><span class="bcard-hook" style="color:var(--muted)">${d.hook}</span><div class="bcard-axes">${axPills}</div>`;
+}
+
+/* ══════════════════════════════════════
+   RESULT PAGE
+══════════════════════════════════════ */
+function showResult(){
+  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];
+
+  // Easter egg reveal banner
+  const existingBanner=document.getElementById('egg-banner');
+  if(existingBanner) existingBanner.remove();
+  if(isEasterEgg){
+    const banner=document.createElement('div');
+    banner.id='egg-banner';
+    banner.className='egg-reveal';
+    banner.innerHTML=`<div class="egg-stars" style="position:relative;z-index:1">✦ ✦ ✦</div><div class="egg-label" style="position:relative;z-index:1">Secret result unlocked</div><div class="egg-title" style="position:relative;z-index:1">${d.rarity}</div><div class="egg-rarity" style="position:relative;z-index:1">You found something most people never see.</div>`;
+    const rscreen=document.getElementById('rscreen');
+    rscreen.insertBefore(banner, rscreen.firstChild);
+  }
+
+  renderCard(myType,'blind-card','card-deco','card-figure','card-foot');
+  document.getElementById('rsec-core').innerHTML=`<div class="rsec-lbl">Your type</div><p class="rsec-text">${d.core}</p>`;
+  document.getElementById('rtwo').innerHTML=`<div class="col-card"><div class="col-card-lbl">Your strength</div><p class="col-card-text">${d.strength}</p></div><div class="col-card"><div class="col-card-lbl">Your blind spot</div><p class="col-card-text">${d.blind}</p></div>`;
+  document.getElementById('rsec-rel').innerHTML=`<div class="rsec-lbl">In relationships</div><p class="rsec-text">${d.rel}</p>`;
+  document.getElementById('rquotes').innerHTML=d.quotes.map(q=>`<p class="quote-line">${q}</p>`).join('');
+  document.getElementById('compat-url-el').textContent=`${BASE}?from=${encodeURIComponent(myType)}`;
+  document.getElementById('unlock-title-el').textContent=d.ut;
+  document.getElementById('unlock-desc-el').textContent=d.ud;
+  show('rscreen');
+}
+
+/* ══════════════════════════════════════
+   CANVAS HELPERS
+══════════════════════════════════════ */
+function wrapTxt(ctx,txt,x,y,maxW,lh){
+  const words=txt.split(' ');let line='',cy=y;
+  words.forEach((w,i)=>{const t=line+w+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line.trim(),x,cy);line=w+' ';cy+=lh}else line=t});
+  ctx.fillText(line.trim(),x,cy);return cy;
+}
+
+function drawDeco(ctx,d,W,H){
+  ctx.fillStyle=d.bg;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=d.accent;ctx.globalAlpha=.07;
+  ctx.beginPath();ctx.arc(W*.8,H*.08,W*.38,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(W*.85,H*.55,W*.25,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(W*.12,H*.85,W*.32,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+}
+
+function drawBottomText(ctx,d,nameWord,W,H,nameY,hookY){
+  ctx.fillStyle=d.accent;ctx.font='italic 500 60px Playfair Display,serif';ctx.textAlign='left';
+  ctx.fillText('The',120,nameY-80);
+  ctx.font=`700 ${nameWord.length>8?160:200}px Playfair Display,serif`;
+  ctx.fillStyle=d.accent;ctx.fillText(nameWord,120,nameY);
+  ctx.strokeStyle=d.accent;ctx.lineWidth=5;ctx.globalAlpha=.5;
+  ctx.beginPath();ctx.moveTo(120,nameY+20);ctx.lineTo(120+ctx.measureText(nameWord).width*.7,nameY+20);ctx.stroke();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(26,22,18,.55)';ctx.font='italic 52px Playfair Display,serif';ctx.textAlign='center';
+  const hk=d.hook.replace(/"/g,'');wrapTxt(ctx,hk,W/2,hookY,W-240,68);
+  ctx.fillStyle='rgba(26,22,18,.3)';ctx.font='32px DM Sans,sans-serif';ctx.textAlign='right';
+  ctx.fillText('relationship-archetype-test.com',W-80,H-52);
+}
+
+/* ── STORY 9:16 ── */
+function exportStory(){
+  track('share_clicked', {format: 'story', archetype: myType, is_easter_egg: isEasterEgg});
+  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];const nw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-story');const ctx=cv.getContext('2d');
+  const W=1080,H=1920;
+  drawDeco(ctx,d,W,H);
+  ctx.fillStyle='rgba(26,22,18,.06)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(26,22,18,.35)';ctx.font='500 34px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='7px';
+  ctx.fillText('RELATIONSHIP ARCHETYPE TEST',W/2,100);
+  ctx.letterSpacing='0px';
+  ctx.fillStyle='rgba(26,22,18,.2)';ctx.font='500 28px DM Sans,sans-serif';ctx.textAlign='center';
+  ctx.fillText('▼ swipe up to find yours',W/2,H-40);
+  drawBottomText(ctx,d,nw,W,H,1380,1520);
+  dl(cv,`story-${nw.toLowerCase()}.png`);
+}
+
+/* ── FEED 1:1 ── */
+function exportFeed(){
+  track('share_clicked', {format: 'feed', archetype: myType, is_easter_egg: isEasterEgg});
+  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];const nw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-feed');const ctx=cv.getContext('2d');
+  const S=1080;
+  ctx.fillStyle=d.bg;ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=d.accent;ctx.globalAlpha=.07;
+  ctx.beginPath();ctx.arc(S*.82,S*.18,S*.42,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(S*.15,S*.82,S*.38,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(26,22,18,.3)';ctx.font='500 28px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='6px';
+  ctx.fillText('RELATIONSHIP ARCHETYPE TEST',S/2,68);ctx.letterSpacing='0px';
+  ctx.strokeStyle=d.accent;ctx.lineWidth=3;ctx.globalAlpha=.4;
+  ctx.beginPath();ctx.moveTo(80,90);ctx.lineTo(S-80,90);ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle=d.accent;ctx.font='italic 500 58px Playfair Display,serif';ctx.textAlign='center';
+  ctx.fillText('The',S/2,180);
+  ctx.font=`700 ${nw.length>8?150:190}px Playfair Display,serif`;
+  ctx.fillText(nw,S/2,350);
+  ctx.strokeStyle=d.accent;ctx.lineWidth=4;ctx.globalAlpha=.4;
+  ctx.beginPath();ctx.moveTo(80,380);ctx.lineTo(S-80,380);ctx.stroke();ctx.globalAlpha=1;
+  const axArr=Object.values(d.axes);
+  const pillW=200,pillH=52,pillGap=18,totalW=axArr.length*(pillW+pillGap)-pillGap;
+  const px=(S-totalW)/2;
+  axArr.forEach((v,i)=>{
+    const bx=px+i*(pillW+pillGap);
+    ctx.fillStyle=d.accent;ctx.globalAlpha=.12;
+    roundRect(ctx,bx,410,pillW,pillH,pillH/2);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=d.accent;ctx.font='500 24px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='3px';
+    ctx.fillText(v.toUpperCase(),bx+pillW/2,410+pillH/2+9);ctx.letterSpacing='0px';
+  });
+  ctx.fillStyle='rgba(26,22,18,.55)';ctx.font='italic 46px Playfair Display,serif';ctx.textAlign='center';
+  const hk=d.hook.replace(/"/g,'');wrapTxt(ctx,hk,S/2,530,S-200,62);
+  ctx.strokeStyle=d.accent;ctx.lineWidth=3;ctx.globalAlpha=.3;
+  ctx.beginPath();ctx.moveTo(80,S-100);ctx.lineTo(S-80,S-100);ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(26,22,18,.25)';ctx.font='28px DM Sans,sans-serif';ctx.textAlign='center';
+  ctx.fillText('relationship-archetype-test.com',S/2,S-52);
+  dl(cv,`feed-${nw.toLowerCase()}.png`);
+}
+
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+
+function dl(cv,name){const a=document.createElement('a');a.download=name;a.href=cv.toDataURL('image/png');a.click()}
+
+/* ── COMPAT STORY ── */
+function exportCompatStory(){
+  const fD=A[friendType],mD=A[myType];
+  const fNw=friendType.split(' ')[1],mNw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-compat-story');const ctx=cv.getContext('2d');
+  const W=1080,H=1920;
+  ctx.fillStyle=fD.bg;ctx.fillRect(0,0,W/2,H);
+  ctx.fillStyle=mD.bg;ctx.fillRect(W/2,0,W/2,H);
+  ctx.fillStyle=fD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(W*.2,H*.15,300,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=mD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(W*.8,H*.15,300,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='rgba(26,22,18,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
+  ctx.fillStyle='rgba(26,22,18,.28)';ctx.font='500 32px DM Sans,sans-serif';ctx.letterSpacing='6px';
+  ctx.textAlign='center';ctx.fillText('COMPATIBILITY RESULT',W/2,100);ctx.letterSpacing='0px';
+  ctx.fillStyle=fD.accent;ctx.font='500 40px DM Sans,sans-serif';ctx.textAlign='center';ctx.fillText('them',W/4,200);
+  ctx.fillStyle=mD.accent;ctx.fillText('you',3*W/4,200);
+  ctx.fillStyle=fD.accent;ctx.font=`700 ${fNw.length>8?150:180}px Playfair Display,serif`;ctx.textAlign='center';ctx.fillText(fNw,W/4,1280);
+  ctx.fillStyle=mD.accent;ctx.font=`700 ${mNw.length>8?150:180}px Playfair Display,serif`;ctx.fillText(mNw,3*W/4,1280);
+  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+  const cd=COMPAT[key]||COMPAT[key2];
+  if(cd){ctx.fillStyle='rgba(26,22,18,.5)';ctx.font='italic 54px Playfair Display,serif';ctx.textAlign='center';wrapTxt(ctx,cd.sub,W/2,1400,W-200,72)}
+  ctx.fillStyle='rgba(26,22,18,.25)';ctx.font='32px DM Sans,sans-serif';ctx.textAlign='right';ctx.fillText('relationship-archetype-test.com',W-80,H-52);
+  dl(cv,`compat-story-${fNw}-${mNw}.png`.toLowerCase());
+}
+
+/* ── COMPAT FEED ── */
+function exportCompatFeed(){
+  const fD=A[friendType],mD=A[myType];
+  const fNw=friendType.split(' ')[1],mNw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-compat-feed');const ctx=cv.getContext('2d');
+  const S=1080;
+  const grad=ctx.createLinearGradient(0,0,S,0);grad.addColorStop(0,fD.bg);grad.addColorStop(1,mD.bg);
+  ctx.fillStyle=grad;ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=fD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(S*.15,S*.3,300,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=mD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(S*.85,S*.7,300,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(26,22,18,.28)';ctx.font='500 26px DM Sans,sans-serif';ctx.letterSpacing='5px';ctx.textAlign='center';
+  ctx.fillText('COMPATIBILITY RESULT',S/2,66);ctx.letterSpacing='0px';
+  ctx.fillStyle=fD.accent;ctx.font='500 36px DM Sans,sans-serif';ctx.textAlign='left';ctx.fillText('them',80,150);
+  ctx.fillStyle=mD.accent;ctx.textAlign='right';ctx.fillText('you',S-80,150);
+  ctx.fillStyle=fD.accent;ctx.font=`700 ${fNw.length>7?140:170}px Playfair Display,serif`;ctx.textAlign='left';ctx.fillText(fNw,80,320);
+  ctx.fillStyle=mD.accent;ctx.font=`700 ${mNw.length>7?140:170}px Playfair Display,serif`;ctx.textAlign='right';ctx.fillText(mNw,S-80,320);
+  ctx.strokeStyle='rgba(26,22,18,.12)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(80,360);ctx.lineTo(S-80,360);ctx.stroke();
+  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+  const cd=COMPAT[key]||COMPAT[key2];
+  if(cd){
+    ctx.fillStyle='rgba(26,22,18,.5)';ctx.font='italic 500 52px Playfair Display,serif';ctx.textAlign='center';
+    wrapTxt(ctx,cd.sub,S/2,440,S-200,68);
+    ctx.fillStyle='rgba(26,22,18,.38)';ctx.font='38px DM Sans,sans-serif';ctx.textAlign='center';
+    const bodyShort=cd.body.length>120?cd.body.substring(0,117)+'…':cd.body;
+    wrapTxt(ctx,bodyShort,S/2,600,S-160,54);
+  }
+  ctx.strokeStyle='rgba(26,22,18,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(80,S-110);ctx.lineTo(S-80,S-110);ctx.stroke();
+  ctx.fillStyle='rgba(26,22,18,.22)';ctx.font='28px DM Sans,sans-serif';ctx.textAlign='center';
+  ctx.fillText('relationship-archetype-test.com',S/2,S-58);
+  dl(cv,`compat-feed-${fNw}-${mNw}.png`.toLowerCase());
+}
+
+/* ══════════════════════════════════════
+   SHARE ACTIONS
+══════════════════════════════════════ */
+function copyCaption(){
+  track('share_clicked', {format: 'caption', archetype: myType});
+  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];
+  const cap=d.caption;
+  navigator.clipboard.writeText(cap).catch(()=>{});
+  const btn=document.getElementById('copy-caption-btn');const orig=btn.textContent;
+  btn.textContent='Copied!';setTimeout(()=>btn.textContent=orig,2000);
+}
+function copyCompatCaption(){
+  const fName='The '+friendType.split(' ')[1],mName='The '+myType.split(' ')[1];
+  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+  const cd=COMPAT[key]||COMPAT[key2];
+  const cap=`I just took the Relationship Archetype Test with my friend.\n\nMe: ${mName}\nThem: ${fName}\n\n${cd?cd.sub:'The results are uncomfortably accurate.'}\n\nLink in bio 👆`;
+  navigator.clipboard.writeText(cap).catch(()=>{});
+  alert('Caption copied!');
+}
+function copyCompatLink(){
+  track('compat_link_copied', {archetype: myType, is_easter_egg: isEasterEgg});
+  const url=`${BASE}?from=${encodeURIComponent(myType)}`;
+  navigator.clipboard.writeText(url).catch(()=>{});
+  const btn=event.target;const orig=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=orig,2000);
+}
+
+/* ══════════════════════════════════════
+   COMPAT RESULT
+══════════════════════════════════════ */
+function showCompatResult(){
+  track('compat_result_viewed', {your_type: myType, friend_type: friendType});
+  const fD=A[friendType],mD=A[myType];
+  const fName='The '+friendType.split(' ')[1],mName='The '+myType.split(' ')[1];
+  const card=document.getElementById('compat-blind-card');
+  card.style.background=`linear-gradient(135deg,${fD.bg} 50%,${mD.bg} 50%)`;
+  document.getElementById('compat-card-deco').innerHTML='';
+  const fig=document.getElementById('compat-card-figure');
+  fig.style.background='transparent';
+  fig.innerHTML=`<div style="display:flex;width:100%;align-items:flex-end;justify-content:center"><div style="flex:1;display:flex;justify-content:center">${fD.figure}</div><div style="flex:1;display:flex;justify-content:center">${mD.figure}</div></div>`;
+  fig.querySelectorAll('svg').forEach(s=>Object.assign(s.style,{width:'105px',height:'auto',filter:'drop-shadow(0 8px 16px rgba(0,0,0,.12))'}));
+  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+  const cd=COMPAT[key]||COMPAT[key2];
+  const foot=document.getElementById('compat-card-foot');
+  foot.style.background='transparent';
+  foot.innerHTML=`<div style="display:flex;gap:1rem;margin-bottom:.75rem"><div style="flex:1"><span class="bcard-the" style="color:${fD.accent};opacity:.8">them</span><span class="bcard-name" style="color:${fD.accent};font-size:1.4rem">${fName.split(' ')[1]}</span></div><div style="flex:1;text-align:right"><span class="bcard-the" style="color:${mD.accent};opacity:.8">you</span><span class="bcard-name" style="color:${mD.accent};font-size:1.4rem">${mName.split(' ')[1]}</span></div></div><span class="bcard-hook" style="color:var(--muted)">${cd?cd.sub:'Two distinct ways of showing up.'}</span>`;
+  document.getElementById('compat-body').innerHTML=`
+    <div class="rsec" style="animation-delay:.7s;opacity:0;animation:up .5s .7s forwards"><div class="rsec-lbl">How you work together</div><p class="rsec-text">${cd?cd.body:'You both bring real self-awareness to how you connect — which means you\'re more likely than most pairings to actually talk about the dynamic instead of just experiencing it.'}</p></div>
+    <div class="two-col" style="animation-delay:.8s;opacity:0;animation:up .5s .8s forwards">
+      <div class="col-card"><div class="col-card-lbl" style="color:${fD.accent}">Them — ${fName}</div><p class="col-card-text">${fD.hook}</p></div>
+      <div class="col-card"><div class="col-card-lbl" style="color:${mD.accent}">You — ${mName}</div><p class="col-card-text">${mD.hook}</p></div>
+    </div>
+    ${cd?`<div class="rsec" style="animation-delay:.85s;opacity:0;animation:up .5s .85s forwards"><div class="rsec-lbl">The gap</div><p class="rsec-text">${cd.tension}</p></div>`:''}`;
+  show('compat-result');
+}
+
+
+function showPaidContent(type){
+  const d = PAID_CONTENT[type];
+  if(!d) return;
+
+  // Remove existing modal
+  const existing = document.getElementById('paid-modal');
+  if(existing) existing.remove();
+
+  const typeName = type.replace('THE ','The ');
+  const shadowName = d.shadow.name;
+
+  // Build compatibility rows
+  const withEach = d.compat.with_each || {};
+  const compatRows = Object.entries(withEach).map(([t,text])=>{
+    const tName = t.replace('THE ','The ');
+    return `<div class="compat-row" onclick="this.classList.toggle('open')">
+      <div class="compat-row-head">
+        <span class="compat-row-name">${tName}</span>
+        <span class="compat-row-arrow">↓</span>
+      </div>
+      <div class="compat-row-body">${text}</div>
+    </div>`;
+  }).join('');
+
+  // Build best/hard cards
+  const bestCards = (d.compat.best||[]).map((t,i)=>`
+    <div class="compat-card">
+      <div class="compat-card-lbl" style="color:#3d7030">Best match</div>
+      <div class="compat-card-type">${t.replace('THE ','The ')}</div>
+      <div class="compat-card-why">${i===0?(d.compat.best_why||''):(d.compat.best_why2||'')}</div>
+    </div>`).join('');
+
+  // Signs list
+  const signs = (d.shadow.signs||[]).map(s=>`<div class="shadow-sign">${s}</div>`).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'paid-modal';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('paid-modal').remove()">✕</button>
+
+      <div class="shadow-hero">
+        <div class="shadow-eyebrow">Your shadow archetype</div>
+        <div class="shadow-name">${shadowName}</div>
+        <div class="shadow-trigger">${d.shadow.trigger}</div>
+        <div class="shadow-desc">${d.shadow.desc}</div>
+        <div class="shadow-signs">${signs}</div>
+        <div class="shadow-recovery">
+          <div class="shadow-recovery-lbl">How to come back</div>
+          <div class="shadow-recovery-text">${d.shadow.recovery}</div>
+        </div>
+      </div>
+
+      <div class="compat-section">
+        <div class="compat-h">Compatibility guide</div>
+        <div class="compat-best">${bestCards}</div>
+        <div class="compat-all-h">With every type</div>
+        ${compatRows}
+      </div>
+
+      <div class="modal-footer">
+        <button class="pdf-btn" onclick="printReport()">Download as PDF</button>
+        <span class="modal-note">Print or save to your device</span>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+}
+
+function printReport(){
+  window.print();
+}
+
+
+function goToStripe(){
+  track('unlock_clicked', {archetype: myType, is_easter_egg: isEasterEgg});
+  // Save archetype before leaving — needed to restore after Stripe redirect
+  try{
+    localStorage.setItem('rat_archetype', myType);
+    localStorage.setItem('rat_is_egg', String(isEasterEgg));
+  }catch(e){}
+  // Open Stripe Payment Link
+  window.location.href = 'https://buy.stripe.com/5kQaEW1wQ7FWfqR15r3Ru04';
+}
+
+// Call this after Stripe payment success
+// e.g. if URL has ?payment=success on redirect back
+function trackPaymentSuccess(){
+  track('payment_success', {
+    archetype: myType,
+    value: 4.99,
+    currency: 'USD',
+    is_easter_egg: isEasterEgg
+  });
+  // Also send as GA4 purchase event for revenue reporting
+  track('purchase', {
+    transaction_id: Date.now().toString(),
+    value: 4.99,
+    currency: 'USD',
+    items: [{item_id: 'full_report', item_name: 'Full Report — ' + myType, price: 4.99, quantity: 1}]
+  });
+}
+
+function retake(){startTest()}
+init();
+</script>
+</body>
+</html>
