@@ -239,7 +239,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- QUESTION -->
 <div id="qscreen" class="screen">
   <div class="qhdr">
-    <span class="qhdr-logo">RAT</span>
+    <span class="qhdr-logo" style="font-style:normal;font-family:var(--serif);font-size:14px;font-weight:700;color:var(--ink)">Typed In</span>
     <div class="prog-wrap">
       <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
       <div class="prog-n" id="prog-n">1 of 28</div>
@@ -277,20 +277,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <span class="ig-header-text">Share to Instagram</span>
     </div>
     <div class="ig-card-grid">
-      <button class="ig-card" onclick="exportStory()">
+      <button class="ig-card" onclick="shareStory()">
         <div class="ig-card-icon story-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="19" x2="12" y2="21"/></svg>
         </div>
         <span class="ig-card-title">Post to Story</span>
-        <span class="ig-card-desc">Vertical · disappears in 24h · best for instant sharing</span>
+        <span class="ig-card-desc" id="story-desc">Vertical · opens Instagram directly on mobile</span>
         <span class="ig-card-badge">Popular</span>
       </button>
-      <button class="ig-card" onclick="exportFeed()">
+      <button class="ig-card" onclick="shareFeed()">
         <div class="ig-card-icon feed-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
         </div>
         <span class="ig-card-title">Post to Feed</span>
-        <span class="ig-card-desc">Square · stays on your profile · longer reach</span>
+        <span class="ig-card-desc" id="feed-desc">Square · opens Instagram directly on mobile</span>
       </button>
     </div>
     <div class="ig-copy-row">
@@ -350,7 +350,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <span class="ig-header-text">Share to Instagram</span>
     </div>
     <div class="ig-card-grid">
-      <button class="ig-card" onclick="exportCompatStory()">
+      <button class="ig-card" onclick="shareCompatStory()">
         <div class="ig-card-icon story-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="19" x2="12" y2="21"/></svg>
         </div>
@@ -358,7 +358,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <span class="ig-card-desc">Vertical · disappears in 24h · best for instant sharing</span>
         <span class="ig-card-badge">Popular</span>
       </button>
-      <button class="ig-card" onclick="exportCompatFeed()">
+      <button class="ig-card" onclick="shareCompatFeed()">
         <div class="ig-card-icon feed-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
         </div>
@@ -944,6 +944,15 @@ let sc={A:0,B:0,C:0,D:0},cur=0,myType=null,friendType=null,fromCompat=false,isEa
 const BASE=window.location.origin+window.location.pathname;
 
 function init(){
+  // Update share button descriptions based on device
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  setTimeout(()=>{
+    const sd=document.getElementById('story-desc');
+    const fd=document.getElementById('feed-desc');
+    if(sd) sd.textContent = mobile ? 'Vertical · opens Instagram directly' : 'Vertical 9:16 · saves to your device';
+    if(fd) fd.textContent = mobile ? 'Square · opens Instagram directly' : 'Square 1:1 · saves to your device';
+  },100);
+
   const p=new URLSearchParams(window.location.search);
 
   // Returning from Stripe — ?payment=success in URL
@@ -1144,127 +1153,395 @@ function drawBottomText(ctx,d,nameWord,W,H,nameY,hookY){
 }
 
 /* ── STORY 9:16 ── */
-function exportStory(){
-  track('share_clicked', {format: 'story', archetype: myType, is_easter_egg: isEasterEgg});
-  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];const nw=myType.split(' ')[1];
-  const cv=document.getElementById('cv-story');const ctx=cv.getContext('2d');
-  const W=1080,H=1920;
-  drawDeco(ctx,d,W,H);
-  ctx.fillStyle='rgba(26,22,18,.06)';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='rgba(26,22,18,.35)';ctx.font='500 34px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='7px';
-  ctx.fillText('RELATIONSHIP ARCHETYPE TEST',W/2,100);
+/* ═══════════════════════════════════════
+   CANVAS DRAWING — with character figures
+═══════════════════════════════════════ */
+
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+/* Draw a blind-box figure on canvas at position cx,cy with scale s */
+function drawFigureOnCanvas(ctx, type, cx, cy, s){
+  const d = isEasterEgg&&EASTER_EGGS[type] ? EASTER_EGGS[type] : (A[type]||A['THE FIXER']);
+  const ac = d.accent;
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.12)';
+  ctx.beginPath(); ctx.ellipse(cx, cy+s*0.98, s*0.38, s*0.06, 0, 0, Math.PI*2); ctx.fill();
+
+  // Legs
+  ctx.fillStyle=ac;
+  ctx.beginPath(); roundRectPath(ctx, cx-s*0.13, cy+s*0.38, s*0.23, s*0.52, s*0.1); ctx.fill();
+  ctx.beginPath(); roundRectPath(ctx, cx+s*0.07, cy+s*0.38, s*0.23, s*0.52, s*0.1); ctx.fill();
+
+  // Body
+  ctx.fillStyle=ac;
+  ctx.beginPath(); roundRectPath(ctx, cx-s*0.3, cy-s*0.2, s*0.6, s*0.65, s*0.18); ctx.fill();
+
+  // Arms
+  ctx.beginPath(); roundRectPath(ctx, cx-s*0.52, cy-s*0.18, s*0.24, s*0.38, s*0.1); ctx.fill();
+  ctx.beginPath(); roundRectPath(ctx, cx+s*0.28, cy-s*0.18, s*0.24, s*0.38, s*0.1); ctx.fill();
+
+  // Head
+  ctx.fillStyle = lightenHex(ac, 0.55);
+  ctx.beginPath(); ctx.arc(cx, cy-s*0.52, s*0.3, 0, Math.PI*2); ctx.fill();
+
+  // Hair block
+  ctx.fillStyle = darkenHex(ac, 0.5);
+  ctx.beginPath(); roundRectPath(ctx, cx-s*0.28, cy-s*0.8, s*0.56, s*0.32, s*0.1); ctx.fill();
+  ctx.beginPath(); roundRectPath(ctx, cx-s*0.28, cy-s*0.62, s*0.56, s*0.12, 0); ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = darkenHex(ac, 0.6);
+  ctx.beginPath(); ctx.ellipse(cx-s*0.1, cy-s*0.52, s*0.055, s*0.07, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+s*0.1, cy-s*0.52, s*0.055, s*0.07, 0, 0, Math.PI*2); ctx.fill();
+
+  // Eye shine
+  ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.beginPath(); ctx.arc(cx-s*0.085, cy-s*0.535, s*0.022, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.115, cy-s*0.535, s*0.022, 0, Math.PI*2); ctx.fill();
+
+  // Mouth — slight smile
+  ctx.strokeStyle = darkenHex(ac, 0.55);
+  ctx.lineWidth = s*0.03;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(cx-s*0.1, cy-s*0.38);
+  ctx.quadraticCurveTo(cx, cy-s*0.32, cx+s*0.1, cy-s*0.38);
+  ctx.stroke();
+}
+
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function lightenHex(hex, amt){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.min(255,((n>>16)&255)+Math.round(255*amt));
+  const g=Math.min(255,((n>>8)&255)+Math.round(255*amt));
+  const b=Math.min(255,(n&255)+Math.round(255*amt));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function darkenHex(hex, amt){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,((n>>16)&255)-Math.round(255*amt));
+  const g=Math.max(0,((n>>8)&255)-Math.round(255*amt));
+  const b=Math.max(0,(n&255)-Math.round(255*amt));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+/* ── STORY 9:16 ── */
+function buildStoryCanvas(type, isEgg){
+  const _isEgg = isEgg !== undefined ? isEgg : isEasterEgg;
+  const d = _isEgg&&EASTER_EGGS[type] ? EASTER_EGGS[type] : (A[type]||A['THE FIXER']);
+  const nw = type.split(' ')[1];
+  const cv = document.getElementById('cv-story');
+  const ctx = cv.getContext('2d');
+  const W=1080, H=1920;
+
+  // Background
+  ctx.fillStyle=d.bg; ctx.fillRect(0,0,W,H);
+
+  // Soft circles deco
+  ctx.fillStyle=d.accent; ctx.globalAlpha=0.07;
+  ctx.beginPath(); ctx.arc(W*0.85,H*0.12,W*0.42,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W*0.1,H*0.88,W*0.35,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+
+  // Top label
+  ctx.fillStyle='rgba(26,22,18,0.35)';
+  ctx.font='500 38px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.letterSpacing='7px';
+  ctx.fillText('TYPED IN',W/2,110);
   ctx.letterSpacing='0px';
-  ctx.fillStyle='rgba(26,22,18,.2)';ctx.font='500 28px DM Sans,sans-serif';ctx.textAlign='center';
-  ctx.fillText('▼ swipe up to find yours',W/2,H-40);
-  drawBottomText(ctx,d,nw,W,H,1380,1520);
-  dl(cv,`story-${nw.toLowerCase()}.png`);
+
+  // Character — centered in upper half
+  drawFigureOnCanvas(ctx, type, W/2, H*0.38, 280);
+
+  // Archetype name block
+  ctx.fillStyle=d.accent;
+  ctx.font='italic 500 72px Playfair Display,serif';
+  ctx.textAlign='center';
+  ctx.fillText('The', W/2, H*0.62);
+
+  ctx.fillStyle='rgba(26,22,18,0.9)';
+  const fontSize = nw.length>8 ? 168 : 210;
+  ctx.font=`700 ${fontSize}px Playfair Display,serif`;
+  ctx.fillText(nw, W/2, H*0.62+fontSize*0.9);
+
+  // Accent line under name
+  const nwWidth = ctx.measureText(nw).width;
+  ctx.strokeStyle=d.accent; ctx.lineWidth=6; ctx.globalAlpha=0.5;
+  ctx.beginPath();
+  ctx.moveTo(W/2-nwWidth/2, H*0.62+fontSize*0.95);
+  ctx.lineTo(W/2+nwWidth/2, H*0.62+fontSize*0.95);
+  ctx.stroke(); ctx.globalAlpha=1;
+
+  // Hook line
+  ctx.fillStyle='rgba(26,22,18,0.6)';
+  ctx.font='italic 52px Playfair Display,serif';
+  ctx.textAlign='center';
+  const hk = d.hook.replace(/"/g,'');
+  wrapCtx(ctx, hk, W/2, H*0.62+fontSize*1.05+80, W-240, 68);
+
+  // Swipe up hint
+  ctx.fillStyle='rgba(26,22,18,0.3)';
+  ctx.font='500 34px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.letterSpacing='4px';
+  ctx.fillText('typedin.me',W/2,H-50);
+  ctx.letterSpacing='0px';
+
+  return cv;
 }
 
 /* ── FEED 1:1 ── */
-function exportFeed(){
-  track('share_clicked', {format: 'feed', archetype: myType, is_easter_egg: isEasterEgg});
-  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];const nw=myType.split(' ')[1];
-  const cv=document.getElementById('cv-feed');const ctx=cv.getContext('2d');
+function buildFeedCanvas(type, isEgg){
+  const _isEgg = isEgg !== undefined ? isEgg : isEasterEgg;
+  const d = _isEgg&&EASTER_EGGS[type] ? EASTER_EGGS[type] : (A[type]||A['THE FIXER']);
+  const nw = type.split(' ')[1];
+  const cv = document.getElementById('cv-feed');
+  const ctx = cv.getContext('2d');
   const S=1080;
-  ctx.fillStyle=d.bg;ctx.fillRect(0,0,S,S);
-  ctx.fillStyle=d.accent;ctx.globalAlpha=.07;
-  ctx.beginPath();ctx.arc(S*.82,S*.18,S*.42,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(S*.15,S*.82,S*.38,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle=d.bg; ctx.fillRect(0,0,S,S);
+
+  ctx.fillStyle=d.accent; ctx.globalAlpha=0.07;
+  ctx.beginPath(); ctx.arc(S*0.85,S*0.15,S*0.38,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.12,S*0.85,S*0.3,0,Math.PI*2); ctx.fill();
   ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(26,22,18,.3)';ctx.font='500 28px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='6px';
-  ctx.fillText('RELATIONSHIP ARCHETYPE TEST',S/2,68);ctx.letterSpacing='0px';
-  ctx.strokeStyle=d.accent;ctx.lineWidth=3;ctx.globalAlpha=.4;
-  ctx.beginPath();ctx.moveTo(80,90);ctx.lineTo(S-80,90);ctx.stroke();ctx.globalAlpha=1;
-  ctx.fillStyle=d.accent;ctx.font='italic 500 58px Playfair Display,serif';ctx.textAlign='center';
-  ctx.fillText('The',S/2,180);
-  ctx.font=`700 ${nw.length>8?150:190}px Playfair Display,serif`;
-  ctx.fillText(nw,S/2,350);
-  ctx.strokeStyle=d.accent;ctx.lineWidth=4;ctx.globalAlpha=.4;
-  ctx.beginPath();ctx.moveTo(80,380);ctx.lineTo(S-80,380);ctx.stroke();ctx.globalAlpha=1;
-  const axArr=Object.values(d.axes);
-  const pillW=200,pillH=52,pillGap=18,totalW=axArr.length*(pillW+pillGap)-pillGap;
-  const px=(S-totalW)/2;
-  axArr.forEach((v,i)=>{
-    const bx=px+i*(pillW+pillGap);
-    ctx.fillStyle=d.accent;ctx.globalAlpha=.12;
-    roundRect(ctx,bx,410,pillW,pillH,pillH/2);ctx.fill();ctx.globalAlpha=1;
-    ctx.fillStyle=d.accent;ctx.font='500 24px DM Sans,sans-serif';ctx.textAlign='center';ctx.letterSpacing='3px';
-    ctx.fillText(v.toUpperCase(),bx+pillW/2,410+pillH/2+9);ctx.letterSpacing='0px';
+
+  // Top label
+  ctx.fillStyle='rgba(26,22,18,0.3)';
+  ctx.font='500 30px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.letterSpacing='6px';
+  ctx.fillText('TYPED IN',S/2,68); ctx.letterSpacing='0px';
+
+  // Accent line
+  ctx.strokeStyle=d.accent; ctx.lineWidth=3; ctx.globalAlpha=0.4;
+  ctx.beginPath(); ctx.moveTo(80,90); ctx.lineTo(S-80,90); ctx.stroke();
+  ctx.globalAlpha=1;
+
+  // Character — left side
+  drawFigureOnCanvas(ctx, type, S*0.28, S*0.54, 190);
+
+  // Name — right side
+  ctx.fillStyle=d.accent;
+  ctx.font='italic 500 52px Playfair Display,serif';
+  ctx.textAlign='left';
+  ctx.fillText('The', S*0.52, S*0.32);
+
+  const fontSize = nw.length>8 ? 130 : 160;
+  ctx.fillStyle='rgba(26,22,18,0.9)';
+  ctx.font=`700 ${fontSize}px Playfair Display,serif`;
+  ctx.fillText(nw, S*0.52, S*0.32+fontSize*0.9);
+
+  // Axis pills
+  const axes=Object.values((A[type]||A['THE FIXER']).axes);
+  axes.forEach((v,i)=>{
+    const px=S*0.52, py=S*0.32+fontSize*1.0+20+i*52;
+    ctx.fillStyle=d.accent; ctx.globalAlpha=0.12;
+    ctx.beginPath(); roundRectPath(ctx,px,py,170,38,19); ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=d.accent;
+    ctx.font='500 22px DM Sans,sans-serif';
+    ctx.textAlign='center'; ctx.letterSpacing='2px';
+    ctx.fillText(v.toUpperCase(), px+85, py+26);
+    ctx.letterSpacing='0px';
   });
-  ctx.fillStyle='rgba(26,22,18,.55)';ctx.font='italic 46px Playfair Display,serif';ctx.textAlign='center';
-  const hk=d.hook.replace(/"/g,'');wrapTxt(ctx,hk,S/2,530,S-200,62);
-  ctx.strokeStyle=d.accent;ctx.lineWidth=3;ctx.globalAlpha=.3;
-  ctx.beginPath();ctx.moveTo(80,S-100);ctx.lineTo(S-80,S-100);ctx.stroke();ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(26,22,18,.25)';ctx.font='28px DM Sans,sans-serif';ctx.textAlign='center';
-  ctx.fillText('relationship-archetype-test.com',S/2,S-52);
-  dl(cv,`feed-${nw.toLowerCase()}.png`);
+
+  // Hook
+  ctx.fillStyle='rgba(26,22,18,0.55)';
+  ctx.font='italic 36px Playfair Display,serif';
+  ctx.textAlign='center';
+  const hk=d.hook.replace(/"/g,'');
+  wrapCtx(ctx, hk, S/2, S*0.88, S-160, 48);
+
+  // Bottom line
+  ctx.strokeStyle=d.accent; ctx.lineWidth=3; ctx.globalAlpha=0.3;
+  ctx.beginPath(); ctx.moveTo(80,S-80); ctx.lineTo(S-80,S-80); ctx.stroke();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(26,22,18,0.25)';
+  ctx.font='26px DM Sans,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('typedin.me',S/2,S-42);
+
+  return cv;
 }
 
-function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
-
-function dl(cv,name){const a=document.createElement('a');a.download=name;a.href=cv.toDataURL('image/png');a.click()}
-
 /* ── COMPAT STORY ── */
-function exportCompatStory(){
-  const fD=A[friendType],mD=A[myType];
-  const fNw=friendType.split(' ')[1],mNw=myType.split(' ')[1];
-  const cv=document.getElementById('cv-compat-story');const ctx=cv.getContext('2d');
-  const W=1080,H=1920;
-  ctx.fillStyle=fD.bg;ctx.fillRect(0,0,W/2,H);
-  ctx.fillStyle=mD.bg;ctx.fillRect(W/2,0,W/2,H);
-  ctx.fillStyle=fD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(W*.2,H*.15,300,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=mD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(W*.8,H*.15,300,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=1;
-  ctx.strokeStyle='rgba(26,22,18,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
-  ctx.fillStyle='rgba(26,22,18,.28)';ctx.font='500 32px DM Sans,sans-serif';ctx.letterSpacing='6px';
-  ctx.textAlign='center';ctx.fillText('COMPATIBILITY RESULT',W/2,100);ctx.letterSpacing='0px';
-  ctx.fillStyle=fD.accent;ctx.font='500 40px DM Sans,sans-serif';ctx.textAlign='center';ctx.fillText('them',W/4,200);
-  ctx.fillStyle=mD.accent;ctx.fillText('you',3*W/4,200);
-  ctx.fillStyle=fD.accent;ctx.font=`700 ${fNw.length>8?150:180}px Playfair Display,serif`;ctx.textAlign='center';ctx.fillText(fNw,W/4,1280);
-  ctx.fillStyle=mD.accent;ctx.font=`700 ${mNw.length>8?150:180}px Playfair Display,serif`;ctx.fillText(mNw,3*W/4,1280);
-  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+function buildCompatStoryCanvas(){
+  const fD=A[friendType]||A['THE FIXER'], mD=A[myType]||A['THE FIXER'];
+  const fNw=friendType.split(' ')[1], mNw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-compat-story');
+  const ctx=cv.getContext('2d');
+  const W=1080, H=1920;
+
+  // Split bg
+  ctx.fillStyle=fD.bg; ctx.fillRect(0,0,W/2,H);
+  ctx.fillStyle=mD.bg; ctx.fillRect(W/2,0,W/2,H);
+
+  // Divider
+  ctx.strokeStyle='rgba(26,22,18,0.1)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+
+  // Labels
+  ctx.fillStyle='rgba(26,22,18,0.28)';
+  ctx.font='500 32px DM Sans,sans-serif'; ctx.letterSpacing='6px'; ctx.textAlign='center';
+  ctx.fillText('TYPED IN',W/2,100); ctx.letterSpacing='0px';
+
+  ctx.fillStyle=fD.accent; ctx.font='500 42px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.fillText('them',W/4,200);
+  ctx.fillStyle=mD.accent; ctx.fillText('you',3*W/4,200);
+
+  // Characters
+  drawFigureOnCanvas(ctx, friendType, W/4, H*0.42, 220);
+  drawFigureOnCanvas(ctx, myType, 3*W/4, H*0.42, 220);
+
+  // Names
+  ctx.fillStyle=fD.accent;
+  const fSize=fNw.length>8?130:160;
+  ctx.font=`700 ${fSize}px Playfair Display,serif`; ctx.textAlign='center';
+  ctx.fillText(fNw,W/4,H*0.72);
+
+  ctx.fillStyle=mD.accent;
+  const mSize=mNw.length>8?130:160;
+  ctx.font=`700 ${mSize}px Playfair Display,serif`;
+  ctx.fillText(mNw,3*W/4,H*0.72);
+
+  // Sub
+  const key=friendType+'+'+myType, key2=myType+'+'+friendType;
   const cd=COMPAT[key]||COMPAT[key2];
-  if(cd){ctx.fillStyle='rgba(26,22,18,.5)';ctx.font='italic 54px Playfair Display,serif';ctx.textAlign='center';wrapTxt(ctx,cd.sub,W/2,1400,W-200,72)}
-  ctx.fillStyle='rgba(26,22,18,.25)';ctx.font='32px DM Sans,sans-serif';ctx.textAlign='right';ctx.fillText('relationship-archetype-test.com',W-80,H-52);
-  dl(cv,`compat-story-${fNw}-${mNw}.png`.toLowerCase());
+  if(cd){
+    ctx.fillStyle='rgba(26,22,18,0.55)';
+    ctx.font='italic 52px Playfair Display,serif'; ctx.textAlign='center';
+    wrapCtx(ctx,cd.sub,W/2,H*0.82,W-200,68);
+  }
+
+  ctx.fillStyle='rgba(26,22,18,0.25)';
+  ctx.font='32px DM Sans,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('typedin.me',W/2,H-50);
+  return cv;
 }
 
 /* ── COMPAT FEED ── */
-function exportCompatFeed(){
-  const fD=A[friendType],mD=A[myType];
-  const fNw=friendType.split(' ')[1],mNw=myType.split(' ')[1];
-  const cv=document.getElementById('cv-compat-feed');const ctx=cv.getContext('2d');
+function buildCompatFeedCanvas(){
+  const fD=A[friendType]||A['THE FIXER'], mD=A[myType]||A['THE FIXER'];
+  const fNw=friendType.split(' ')[1], mNw=myType.split(' ')[1];
+  const cv=document.getElementById('cv-compat-feed');
+  const ctx=cv.getContext('2d');
   const S=1080;
-  const grad=ctx.createLinearGradient(0,0,S,0);grad.addColorStop(0,fD.bg);grad.addColorStop(1,mD.bg);
-  ctx.fillStyle=grad;ctx.fillRect(0,0,S,S);
-  ctx.fillStyle=fD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(S*.15,S*.3,300,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=mD.accent;ctx.globalAlpha=.07;ctx.beginPath();ctx.arc(S*.85,S*.7,300,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(26,22,18,.28)';ctx.font='500 26px DM Sans,sans-serif';ctx.letterSpacing='5px';ctx.textAlign='center';
-  ctx.fillText('COMPATIBILITY RESULT',S/2,66);ctx.letterSpacing='0px';
-  ctx.fillStyle=fD.accent;ctx.font='500 36px DM Sans,sans-serif';ctx.textAlign='left';ctx.fillText('them',80,150);
-  ctx.fillStyle=mD.accent;ctx.textAlign='right';ctx.fillText('you',S-80,150);
-  ctx.fillStyle=fD.accent;ctx.font=`700 ${fNw.length>7?140:170}px Playfair Display,serif`;ctx.textAlign='left';ctx.fillText(fNw,80,320);
-  ctx.fillStyle=mD.accent;ctx.font=`700 ${mNw.length>7?140:170}px Playfair Display,serif`;ctx.textAlign='right';ctx.fillText(mNw,S-80,320);
-  ctx.strokeStyle='rgba(26,22,18,.12)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(80,360);ctx.lineTo(S-80,360);ctx.stroke();
-  const key=friendType+'+'+myType,key2=myType+'+'+friendType;
+
+  const grad=ctx.createLinearGradient(0,0,S,0);
+  grad.addColorStop(0,fD.bg); grad.addColorStop(1,mD.bg);
+  ctx.fillStyle=grad; ctx.fillRect(0,0,S,S);
+
+  // Top
+  ctx.fillStyle='rgba(26,22,18,0.28)'; ctx.font='500 26px DM Sans,sans-serif';
+  ctx.letterSpacing='5px'; ctx.textAlign='center';
+  ctx.fillText('TYPED IN — COMPATIBILITY',S/2,66); ctx.letterSpacing='0px';
+
+  // Two characters side by side
+  drawFigureOnCanvas(ctx, friendType, S*0.28, S*0.48, 170);
+  drawFigureOnCanvas(ctx, myType,     S*0.72, S*0.48, 170);
+
+  // Names
+  ctx.fillStyle=fD.accent;
+  ctx.font=`700 ${fNw.length>7?110:136}px Playfair Display,serif`;
+  ctx.textAlign='center'; ctx.fillText(fNw,S*0.28,S*0.74);
+
+  ctx.fillStyle=mD.accent;
+  ctx.font=`700 ${mNw.length>7?110:136}px Playfair Display,serif`;
+  ctx.fillText(mNw,S*0.72,S*0.74);
+
+  ctx.fillStyle=fD.accent; ctx.font='400 36px DM Sans,sans-serif';
+  ctx.fillText('them',S*0.28,S*0.77+30);
+  ctx.fillStyle=mD.accent;
+  ctx.fillText('you',S*0.72,S*0.77+30);
+
+  // Sub
+  const key=friendType+'+'+myType, key2=myType+'+'+friendType;
   const cd=COMPAT[key]||COMPAT[key2];
   if(cd){
-    ctx.fillStyle='rgba(26,22,18,.5)';ctx.font='italic 500 52px Playfair Display,serif';ctx.textAlign='center';
-    wrapTxt(ctx,cd.sub,S/2,440,S-200,68);
-    ctx.fillStyle='rgba(26,22,18,.38)';ctx.font='38px DM Sans,sans-serif';ctx.textAlign='center';
-    const bodyShort=cd.body.length>120?cd.body.substring(0,117)+'…':cd.body;
-    wrapTxt(ctx,bodyShort,S/2,600,S-160,54);
+    ctx.fillStyle='rgba(26,22,18,0.6)';
+    ctx.font='italic 44px Playfair Display,serif'; ctx.textAlign='center';
+    wrapCtx(ctx,cd.sub,S/2,S*0.88,S-160,56);
   }
-  ctx.strokeStyle='rgba(26,22,18,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(80,S-110);ctx.lineTo(S-80,S-110);ctx.stroke();
-  ctx.fillStyle='rgba(26,22,18,.22)';ctx.font='28px DM Sans,sans-serif';ctx.textAlign='center';
-  ctx.fillText('relationship-archetype-test.com',S/2,S-58);
-  dl(cv,`compat-feed-${fNw}-${mNw}.png`.toLowerCase());
+
+  ctx.fillStyle='rgba(26,22,18,0.22)'; ctx.font='26px DM Sans,sans-serif';
+  ctx.textAlign='center'; ctx.fillText('typedin.me',S/2,S-42);
+  return cv;
 }
 
-/* ══════════════════════════════════════
-   SHARE ACTIONS
-══════════════════════════════════════ */
+/* ── SHARE LOGIC ── */
+async function shareToIG(canvas, format){
+  track('share_clicked',{format, archetype: myType, is_easter_egg: isEasterEgg});
+
+  // Convert canvas to blob
+  const blob = await new Promise(res=>canvas.toBlob(res,'image/png'));
+  const file = new File([blob], `typedin-${format}.png`, {type:'image/png'});
+  const url = URL.createObjectURL(blob);
+
+  if(isMobile()){
+    // Try Web Share API (best on iOS/Android)
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({
+          files:[file],
+          title:'Typed In — my relationship archetype',
+        });
+        return;
+      }catch(e){ if(e.name==='AbortError') return; }
+    }
+    // Fallback: download + hint to open IG
+    dl(canvas, `typedin-${format}.png`);
+    setTimeout(()=>alert('Image saved! Open Instagram and select it from your camera roll to share.'),300);
+  } else {
+    // Desktop: just download
+    dl(canvas, `typedin-${format}.png`);
+  }
+  URL.revokeObjectURL(url);
+}
+
+function shareStory(){
+  const cv = buildStoryCanvas(myType);
+  shareToIG(cv,'story');
+}
+function shareFeed(){
+  const cv = buildFeedCanvas(myType);
+  shareToIG(cv,'feed');
+}
+function shareCompatStory(){
+  const cv = buildCompatStoryCanvas();
+  shareToIG(cv,'compat-story');
+}
+function shareCompatFeed(){
+  const cv = buildCompatFeedCanvas();
+  shareToIG(cv,'compat-feed');
+}
+
+function downloadCompatImg(){ shareCompatStory(); }
+
+function shareX(){
+  const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(d.share)}&url=${encodeURIComponent('https://typedin.me/')}`,'_blank');
+}
+function shareCompatX(){
+  const fName='The '+friendType.split(' ')[1], mName='The '+myType.split(' ')[1];
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm ${mName}. My friend is ${fName}. Our compatibility result is uncomfortably accurate.`)}&url=${encodeURIComponent('https://typedin.me/')}`,'_blank');
+}
+
+function dl(cv,name){
+  const a=document.createElement('a');
+  a.download=name; a.href=cv.toDataURL('image/png'); a.click();
+}
+
+
 function copyCaption(){
   track('share_clicked', {format: 'caption', archetype: myType});
   const d=isEasterEgg&&EASTER_EGGS[myType]?EASTER_EGGS[myType]:A[myType];
