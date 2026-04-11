@@ -211,73 +211,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
      Get it at: analytics.google.com → Admin → Data Streams → Web stream details
 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-X1W1C91E3M">
-// ═══ Share functions ═══════════════════════════════
-
-function isMobile(){
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function preloadCharImgs(){
-  Object.keys(CHAR_IMGS).forEach(type => getCharImg(type));
-}
-
-function waitForImg(img){
-  return new Promise(resolve => {
-    if(img && img.complete && img.naturalWidth) return resolve();
-    if(!img) return resolve();
-    img.onload = resolve;
-    img.onerror = resolve;
-  });
-}
-
-async function shareStory(){
-  const img = getCharImg(myType);
-  await waitForImg(img);
-  const cv = buildStoryCanvas(myType);
-  await shareToIG(cv, 'story');
-}
-
-async function shareFeed(){
-  const img = getCharImg(myType);
-  await waitForImg(img);
-  const cv = buildFeedCanvas(myType);
-  await shareToIG(cv, 'feed');
-}
-
-async function shareCompatStory(){
-  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
-  const cv = buildCompatStoryCanvas();
-  await shareToIG(cv, 'compat-story');
-}
-
-async function shareCompatFeed(){
-  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
-  const cv = buildCompatFeedCanvas();
-  await shareToIG(cv, 'compat-feed');
-}
-
-function showShareToast(isStory){
-  const old = document.getElementById('ig-toast');
-  if(old) old.remove();
-  const steps = isStory
-    ? ['Long press the image to save to camera roll','Open Instagram','Tap + → Story','Select saved image']
-    : ['Long press the image to save to camera roll','Open Instagram','Tap + → Post','Select saved image'];
-  const toast = document.createElement('div');
-  toast.id = 'ig-toast';
-  toast.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1a1612;color:#f5f0e8;padding:1.25rem 1.5rem 2.5rem;border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.35);font-family:sans-serif';
-  toast.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-size:1rem;font-weight:600">Post to Instagram</div>
-      <button onclick="document.getElementById('ig-toast').remove()" style="background:rgba(255,255,255,.15);border:none;color:#f5f0e8;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:28px">✕</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem">
-      ${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">${i+1}</span><span style="font-size:13px;opacity:${i===0?'1':'.75'}">${s}</span></div>`).join('')}
-    </div>
-    <button onclick="window.location.href='instagram://camera';setTimeout(()=>window.open('https://instagram.com','_blank'),1200);document.getElementById('ig-toast').remove()" style="width:100%;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border:none;color:#fff;padding:14px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.06em;text-transform:uppercase">Open Instagram</button>`;
-  document.body.appendChild(toast);
-  setTimeout(() => { const t=document.getElementById('ig-toast'); if(t) t.remove(); }, 15000);
-}
-
 </script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -1844,6 +1777,69 @@ function renderAxisChart(scores){
 
 function retake(){startTest()}
 init();
+
+// ═══ Share functions ═══════════════════════════════
+
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function waitForImg(img){
+  return new Promise(resolve => {
+    if(!img || (img.complete && img.naturalWidth)) return resolve();
+    img.onload = resolve;
+    img.onerror = resolve;
+  });
+}
+
+async function shareStory(){
+  const img = getCharImg(myType);
+  await waitForImg(img);
+  const cv = buildStoryCanvas(myType);
+  await shareToIG(cv, 'story');
+}
+
+async function shareFeed(){
+  const img = getCharImg(myType);
+  await waitForImg(img);
+  const cv = buildFeedCanvas(myType);
+  await shareToIG(cv, 'feed');
+}
+
+async function shareCompatStory(){
+  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
+  const cv = buildCompatStoryCanvas();
+  await shareToIG(cv, 'compat-story');
+}
+
+async function shareCompatFeed(){
+  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
+  const cv = buildCompatFeedCanvas();
+  await shareToIG(cv, 'compat-feed');
+}
+
+function showShareToast(isStory){
+  const old = document.getElementById('ig-toast');
+  if(old) old.remove();
+  const steps = isStory
+    ? ['Long press the image to save to camera roll','Open Instagram','Tap + → Story','Select saved image']
+    : ['Long press the image to save to camera roll','Open Instagram','Tap + → Post','Select saved image'];
+  const toast = document.createElement('div');
+  toast.id = 'ig-toast';
+  toast.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1a1612;color:#f5f0e8;padding:1.25rem 1.5rem 2.5rem;border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.35);font-family:sans-serif';
+  toast.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:1rem;font-weight:600">Post to Instagram</div>
+      <button onclick="document.getElementById('ig-toast').remove()" style="background:rgba(255,255,255,.15);border:none;color:#f5f0e8;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:28px">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem">
+      ${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">${i+1}</span><span style="font-size:13px;opacity:${i===0?'1':'.75'}">${s}</span></div>`).join('')}
+    </div>
+    <button onclick="window.location.href='instagram://camera';setTimeout(()=>window.open('https://instagram.com','_blank'),1200);document.getElementById('ig-toast').remove()" style="width:100%;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border:none;color:#fff;padding:14px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.06em;text-transform:uppercase">Open Instagram</button>`;
+  document.body.appendChild(toast);
+  setTimeout(() => { const t=document.getElementById('ig-toast'); if(t) t.remove(); }, 15000);
+}
+
 </script>
 </body>
 </html>
