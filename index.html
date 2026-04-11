@@ -983,6 +983,7 @@ let sc={A:0,B:0,C:0,D:0},cur=0,myType=null,friendType=null,fromCompat=false,isEa
 const BASE=window.location.origin+window.location.pathname;
 
 function init(){
+  preloadCharImgs();
   // Update share button descriptions based on device
   const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   setTimeout(()=>{
@@ -1210,6 +1211,15 @@ function isMobile(){
 
 /* Draw a blind-box figure on canvas at position cx,cy with scale s */
 const _CHAR_IMG_CACHE = {};
+
+function preloadCharImgs(){
+  Object.keys(CHAR_IMGS).forEach(type=>{
+    const img = new Image();
+    img.src = CHAR_IMGS[type];
+    _CHAR_IMG_CACHE[type] = img;
+  });
+}
+
 function getCharImg(type){
   if(_CHAR_IMG_CACHE[type]) return _CHAR_IMG_CACHE[type];
   const src = CHAR_IMGS[type];
@@ -1220,16 +1230,22 @@ function getCharImg(type){
   return img;
 }
 
+function waitForImg(img){
+  return new Promise(resolve=>{
+    if(img.complete && img.naturalWidth) return resolve();
+    img.onload = resolve;
+    img.onerror = resolve;
+  });
+}
+
 function drawFigureOnCanvas(ctx, type, cx, cy, s){
   const img = getCharImg(type);
-  if(!img) return;
+  if(!img || !img.complete || !img.naturalWidth) return;
   const targetH = s * 1.9;
-  const targetW = img.naturalWidth ? targetH * (img.naturalWidth / img.naturalHeight) : targetH * 0.8;
+  const targetW = targetH * (img.naturalWidth / img.naturalHeight);
   const dx = cx - targetW/2;
   const dy = cy - targetH * 0.88;
-  if(img.complete && img.naturalWidth){
-    ctx.drawImage(img, dx, dy, targetW, targetH);
-  }
+  ctx.drawImage(img, dx, dy, targetW, targetH);
 }
 
 
@@ -1540,6 +1556,76 @@ async function shareToIG(canvas, format){
     }
   }, 'image/png');
 }
+
+
+function showShareToast(isStory){
+  const old = document.getElementById('ig-toast');
+  if(old) old.remove();
+  const steps = isStory
+    ? ['Image opened — long press to save','Open Instagram','Tap + → Story','Select saved image']
+    : ['Image opened — long press to save','Open Instagram','Tap + → Post','Select saved image'];
+  const toast = document.createElement('div');
+  toast.id = 'ig-toast';
+  toast.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:2000;background:#1a1612;color:#f5f0e8;padding:1.25rem 1.5rem 2rem;border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.25);font-family:var(--sans);animation:slideUp .3s ease';
+  toast.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-family:var(--serif);font-size:1rem;font-weight:700">Share to Instagram ${isStory?'Story':'Feed'}</div>
+      <button onclick="document.getElementById('ig-toast').remove()" style="background:rgba(255,255,255,.12);border:none;color:#f5f0e8;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
+      ${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">${i+1}</span><span style="font-size:13px;opacity:${i===0?1:.7}">${s}</span></div>`).join('')}
+    </div>
+    <button onclick="openInstagram();document.getElementById('ig-toast').remove()" style="width:100%;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border:none;color:#fff;padding:13px;border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:.05em;text-transform:uppercase">Open Instagram</button>`;
+  document.body.appendChild(toast);
+  setTimeout(()=>{ const t=document.getElementById('ig-toast'); if(t) t.remove(); },12000);
+}
+
+function openInstagram(){
+  window.location.href='instagram://camera';
+  setTimeout(()=>window.open('https://www.instagram.com','_blank'),1500);
+}
+
+async function shareStory(){
+  const img = getCharImg(myType);
+  if(img) await waitForImg(img);
+  const cv = buildStoryCanvas(myType);
+  shareToIG(cv, 'story');
+}
+async function shareFeed(){
+  const img = getCharImg(myType);
+  if(img) await waitForImg(img);
+  const cv = buildFeedCanvas(myType);
+  shareToIG(cv, 'feed');
+}
+async function shareCompatStory(){
+  const imgs = [getCharImg(myType), getCharImg(friendType)];
+  await Promise.all(imgs.filter(Boolean).map(waitForImg));
+  const cv = buildCompatStoryCanvas();
+  shareToIG(cv, 'compat-story');
+}
+async function shareCompatFeed(){
+  const imgs = [getCharImg(myType), getCharImg(friendType)];
+  await Promise.all(imgs.filter(Boolean).map(waitForImg));
+  const cv = buildCompatFeedCanvas();
+  shareToIG(cv, 'compat-feed');
+}
+function copyCaption(){
+  track('share_clicked',{format:'caption', archetype:myType});
+  const d = isEasterEgg&&EASTER_EGGS[myType] ? EASTER_EGGS[myType] : A[myType];
+  const cap = d.caption || d.share || '';
+  navigator.clipboard.writeText(cap).catch(()=>{});
+  const btn = document.getElementById('copy-caption-btn');
+  if(btn){ const orig=btn.textContent; btn.textContent='Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+}
+function copyCompatCaption(){
+  const fName='The '+friendType.split(' ')[1], mName='The '+myType.split(' ')[1];
+  const key=friendType+'+'+myType, key2=myType+'+'+friendType;
+  const cd=COMPAT[key]||COMPAT[key2];
+  const cap=`Me: ${mName}\nThem: ${fName}\n\n${cd?cd.sub:'Uncomfortably accurate.'}\n\ntypedin.me`;
+  navigator.clipboard.writeText(cap).catch(()=>{});
+  alert('Caption copied!');
+}
+
 
 
 function dl(cv,name){
