@@ -1276,6 +1276,24 @@ function darkenHex(hex, amt){
 }
 
 /* ── STORY 9:16 ── */
+
+function wrapCtx(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '';
+  let currentY = y;
+  for(let i = 0; i < words.length; i++){
+    const testLine = line + (line ? ' ' : '') + words[i];
+    const metrics = ctx.measureText(testLine);
+    if(metrics.width > maxWidth && line){
+      ctx.fillText(line, x, currentY);
+      line = words[i];
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  if(line) ctx.fillText(line, x, currentY);
+}
 function buildStoryCanvas(type, isEgg){
   const _isEgg = isEgg !== undefined ? isEgg : isEasterEgg;
   const d = _isEgg&&EASTER_EGGS[type] ? EASTER_EGGS[type] : (A[type]||A['THE FIXER']);
