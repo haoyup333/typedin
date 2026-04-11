@@ -15,7 +15,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .screen{display:none;min-height:100vh}
 .screen.active{display:flex;flex-direction:column}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn{from{opacity:0;transform:scale(.93) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.93) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
 /* LANDING */
@@ -80,7 +80,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .share-hint{text-align:center;padding:.75rem;font-size:11px;color:var(--muted);border-bottom:1px solid var(--faint);opacity:0;animation:up .5s .7s forwards}
 
 /* Instagram share panel */
-.ig-panel{padding:1.25rem 1.5rem;border-bottom:1px solid var(--faint);opacity:0;animation:up .5s .72s forwards}
+.ig-panel{padding:1.25rem 1.5rem;border-bottom:1px solid var(--faint);opacity:0;animation:up .5s .72s forwards;pointer-events:auto}
 .ig-header{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
 .ig-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#f9ce34 0%,#ee2a7b 50%,#6228d7 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ig-logo svg{width:13px;height:13px}
@@ -1167,6 +1167,7 @@ function showResult(){
   document.getElementById('unlock-title-el').textContent=d.ut;
   document.getElementById('unlock-desc-el').textContent=d.ud;
   show('rscreen');
+
 }
 
 /* ══════════════════════════════════════
