@@ -1366,67 +1366,89 @@ function buildFeedCanvas(type, isEgg){
   const ctx = cv.getContext('2d');
   const S=1080;
 
+  // Background
   ctx.fillStyle=d.bg; ctx.fillRect(0,0,S,S);
 
+  // Deco circles
   ctx.fillStyle=d.accent; ctx.globalAlpha=0.07;
-  ctx.beginPath(); ctx.arc(S*0.85,S*0.15,S*0.38,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(S*0.12,S*0.85,S*0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.78,S*0.22,S*0.32,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(S*0.15,S*0.82,S*0.25,0,Math.PI*2); ctx.fill();
   ctx.globalAlpha=1;
 
   // Top label
   ctx.fillStyle='rgba(26,22,18,0.3)';
-  ctx.font='500 30px DM Sans,sans-serif';
+  ctx.font='500 28px DM Sans,sans-serif';
   ctx.textAlign='center'; ctx.letterSpacing='6px';
-  ctx.fillText('TYPED IN',S/2,68); ctx.letterSpacing='0px';
+  ctx.fillText('TYPED IN',S/2,62); ctx.letterSpacing='0px';
 
-  // Accent line
-  ctx.strokeStyle=d.accent; ctx.lineWidth=3; ctx.globalAlpha=0.4;
-  ctx.beginPath(); ctx.moveTo(80,90); ctx.lineTo(S-80,90); ctx.stroke();
+  // Top divider
+  ctx.strokeStyle=d.accent; ctx.lineWidth=2; ctx.globalAlpha=0.35;
+  ctx.beginPath(); ctx.moveTo(80,82); ctx.lineTo(S-80,82); ctx.stroke();
   ctx.globalAlpha=1;
 
-  // Character — left side
-  drawFigureOnCanvas(ctx, type, S*0.28, S*0.54, 190);
+  // Layout: left=character (45%), right=text (55%)
+  const charCX = S*0.24;
+  const textX  = S*0.48;
+  const textW  = S - textX - 60; // right margin 60px
 
-  // Name — right side
+  // Character — left side, vertically centered
+  drawFigureOnCanvas(ctx, type, charCX, S*0.52, 200);
+
+  // "The" label
   ctx.fillStyle=d.accent;
-  ctx.font='italic 500 52px Playfair Display,serif';
+  ctx.font='italic 500 48px Playfair Display,serif';
   ctx.textAlign='left';
-  ctx.fillText('The', S*0.52, S*0.32);
+  ctx.fillText('The', textX, S*0.30);
 
-  const fontSize = nw.length>8 ? 130 : 160;
-  ctx.fillStyle='rgba(26,22,18,0.9)';
+  // Archetype name — auto-size to fit right column
+  const maxNameW = textW;
+  let fontSize = nw.length > 7 ? 100 : 120;
   ctx.font=`700 ${fontSize}px Playfair Display,serif`;
-  ctx.fillText(nw, S*0.52, S*0.32+fontSize*0.9);
+  while(ctx.measureText(nw).width > maxNameW && fontSize > 60){
+    fontSize -= 6;
+    ctx.font=`700 ${fontSize}px Playfair Display,serif`;
+  }
+  ctx.fillStyle='rgba(26,22,18,0.88)';
+  ctx.fillText(nw, textX, S*0.30 + fontSize*0.92);
 
   // Axis pills
-  const axes=Object.values((A[type]||A['THE FIXER']).axes);
+  const axes = Object.values((A[type]||A['THE FIXER']).axes);
+  const pillY0 = S*0.30 + fontSize*0.92 + 28;
+  const pillH = 36, pillGap = 10, pillPad = 22;
   axes.forEach((v,i)=>{
-    const px=S*0.52, py=S*0.32+fontSize*1.0+20+i*52;
-    ctx.fillStyle=d.accent; ctx.globalAlpha=0.12;
-    ctx.beginPath(); roundRectPath(ctx,px,py,170,38,19); ctx.fill();
+    const label = v.toUpperCase();
+    ctx.font='500 19px DM Sans,sans-serif';
+    const lw = ctx.measureText(label).width;
+    const pillW = lw + pillPad*2;
+    const px = textX;
+    const py = pillY0 + i*(pillH+pillGap);
+    // pill bg
+    ctx.fillStyle=d.accent; ctx.globalAlpha=0.13;
+    ctx.beginPath(); roundRectPath(ctx,px,py,pillW,pillH,pillH/2); ctx.fill();
     ctx.globalAlpha=1;
+    // pill text
     ctx.fillStyle=d.accent;
-    ctx.font='500 22px DM Sans,sans-serif';
-    ctx.textAlign='center'; ctx.letterSpacing='2px';
-    ctx.fillText(v.toUpperCase(), px+85, py+26);
+    ctx.letterSpacing='1.5px';
+    ctx.textAlign='left';
+    ctx.fillText(label, px+pillPad, py+pillH*0.68);
     ctx.letterSpacing='0px';
   });
 
-  // Hook
-  ctx.fillStyle='rgba(26,22,18,0.55)';
-  ctx.font='italic 36px Playfair Display,serif';
+  // Hook quote — bottom area
+  ctx.fillStyle='rgba(26,22,18,0.5)';
+  ctx.font='italic 32px Playfair Display,serif';
   ctx.textAlign='center';
-  const hk=d.hook.replace(/"/g,'');
-  wrapCtx(ctx, hk, S/2, S*0.88, S-160, 48);
+  const hk = d.hook.replace(/"/g,'');
+  wrapCtx(ctx, hk, S/2, S*0.87, S-140, 44);
 
-  // Bottom line
-  ctx.strokeStyle=d.accent; ctx.lineWidth=3; ctx.globalAlpha=0.3;
-  ctx.beginPath(); ctx.moveTo(80,S-80); ctx.lineTo(S-80,S-80); ctx.stroke();
+  // Bottom divider + url
+  ctx.strokeStyle=d.accent; ctx.lineWidth=2; ctx.globalAlpha=0.28;
+  ctx.beginPath(); ctx.moveTo(80,S-78); ctx.lineTo(S-80,S-78); ctx.stroke();
   ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(26,22,18,0.25)';
-  ctx.font='26px DM Sans,sans-serif';
+  ctx.fillStyle='rgba(26,22,18,0.22)';
+  ctx.font='24px DM Sans,sans-serif';
   ctx.textAlign='center';
-  ctx.fillText('typedin.me',S/2,S-42);
+  ctx.fillText('typedin.me',S/2,S-40);
 
   return cv;
 }
@@ -1536,40 +1558,45 @@ function buildCompatFeedCanvas(){
 }
 
 /* ── SHARE LOGIC ── */
-async function shareToIG(canvas, format){
+function shareToIG(canvas, format){
   track('share_clicked',{format, archetype:myType, is_easter_egg:isEasterEgg});
   const isStory = format.includes('story');
   const filename = 'typedin-' + format + '.png';
-  console.log('[share] starting, canvas:', canvas ? canvas.width+'x'+canvas.height : 'NULL');
 
-  try {
-    if(!canvas) throw new Error('canvas is null');
+  if(!canvas){ alert('Canvas error'); return; }
 
-    const blob = await new Promise((resolve, reject) => {
-      try {
-        canvas.toBlob(b => {
-          console.log('[share] toBlob result:', b ? b.size+'bytes' : 'NULL');
-          b ? resolve(b) : reject(new Error('toBlob returned null'));
-        }, 'image/png');
-      } catch(e) { reject(e); }
-    });
+  // toBlob callback fires in same user-gesture context on most browsers
+  canvas.toBlob(function(blob){
+    if(!blob){ alert('Could not generate image'); return; }
 
-    console.log('[share] blob ok, size:', blob.size);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    console.log('[share] download triggered');
-    showShareToast(isStory);
+    if(isMobile() && navigator.canShare && navigator.canShare({files:[new File([blob],filename,{type:'image/png'})]})){
+      // Mobile native share sheet
+      navigator.share({
+        files: [new File([blob], filename, {type:'image/png'})],
+        title: 'My Typed In result'
+      }).catch(function(e){
+        if(e.name === 'AbortError') return;
+        // fallback to download
+        triggerDownload(blob, filename);
+        showShareToast(isStory);
+      });
+    } else {
+      // Desktop or mobile fallback: download
+      triggerDownload(blob, filename);
+      showShareToast(isStory);
+    }
+  }, 'image/png');
+}
 
-  } catch(err) {
-    console.error('[share] ERROR:', err.message, err.stack);
-    alert('Share error: ' + err.message);
-  }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
 }
 
 
@@ -1808,30 +1835,24 @@ function waitForImg(img){
   });
 }
 
-async function shareStory(){
-  const img = getCharImg(myType);
-  await waitForImg(img);
+function shareStory(){
   const cv = buildStoryCanvas(myType);
-  await shareToIG(cv, 'story');
+  shareToIG(cv, 'story');
 }
 
-async function shareFeed(){
-  const img = getCharImg(myType);
-  await waitForImg(img);
+function shareFeed(){
   const cv = buildFeedCanvas(myType);
-  await shareToIG(cv, 'feed');
+  shareToIG(cv, 'feed');
 }
 
-async function shareCompatStory(){
-  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
+function shareCompatStory(){
   const cv = buildCompatStoryCanvas();
-  await shareToIG(cv, 'compat-story');
+  shareToIG(cv, 'compat-story');
 }
 
-async function shareCompatFeed(){
-  await Promise.all([waitForImg(getCharImg(myType)), waitForImg(getCharImg(friendType))]);
+function shareCompatFeed(){
   const cv = buildCompatFeedCanvas();
-  await shareToIG(cv, 'compat-feed');
+  shareToIG(cv, 'compat-feed');
 }
 
 function showShareToast(isStory){
